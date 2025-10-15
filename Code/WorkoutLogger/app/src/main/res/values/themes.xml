@@ -6,4 +6,7 @@
     </style>
 
     <style name="Theme.WorkoutLogger" parent="Base.Theme.WorkoutLogger" />
+    <style name="TextAppearance.App.Medium.Bold" parent="TextAppearance.AppCompat.Medium">
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>

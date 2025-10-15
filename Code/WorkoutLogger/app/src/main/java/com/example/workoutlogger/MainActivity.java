@@ -1,77 +1,69 @@
 package com.example.workoutlogger;
 
 import android.os.Bundle;
-
-import com.google.android.material.snackbar.Snackbar;
-
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.View;
+import com.example.workoutlogger.data.AppDatabase;
+import com.example.workoutlogger.data.Exercise;
+import com.example.workoutlogger.data.WorkoutPlan;
 
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
-
-import com.example.workoutlogger.databinding.ActivityMainBinding;
-
-import android.view.Menu;
-import android.view.MenuItem;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private AppBarConfiguration appBarConfiguration;
-    private ActivityMainBinding binding;
+    private RecyclerView workoutList;
+    private AppDatabase db;
+    private WorkoutAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
+        db = AppDatabase.getDatabase(getApplicationContext());
 
-        setSupportActionBar(binding.toolbar);
+        workoutList = findViewById(R.id.workout_list);
+        workoutList.setLayoutManager(new LinearLayoutManager(this));
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        loadWorkouts();
+    }
 
-        binding.fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAnchorView(R.id.fab)
-                        .setAction("Action", null).show();
+    private void loadWorkouts() {
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            // Seed data if the database is empty
+            if (db.exerciseDao().getAllExercises().isEmpty()) {
+                seedData();
             }
+
+            List<WorkoutPlan> workoutPlans = db.workoutPlanDao().getAllWorkoutPlans();
+            List<Exercise> allExercises = db.exerciseDao().getAllExercises();
+
+            runOnUiThread(() -> {
+                adapter = new WorkoutAdapter(workoutPlans, allExercises);
+                workoutList.setAdapter(adapter);
+            });
         });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
+    private void seedData() {
+        Exercise ex1 = new Exercise(); ex1.name = "Bench Press"; ex1.type = "WEIGHT"; db.exerciseDao().insert(ex1);
+        Exercise ex2 = new Exercise(); ex2.name = "Overhead Press"; ex2.type = "WEIGHT"; db.exerciseDao().insert(ex2);
+        Exercise ex3 = new Exercise(); ex3.name = "Tricep Pushdown"; ex3.type = "WEIGHT"; db.exerciseDao().insert(ex3);
+        Exercise ex4 = new Exercise(); ex4.name = "Pull Ups"; ex4.type = "WEIGHT"; db.exerciseDao().insert(ex4);
+        Exercise ex5 = new Exercise(); ex5.name = "Bent Over Rows"; ex5.type = "WEIGHT"; db.exerciseDao().insert(ex5);
+        Exercise ex6 = new Exercise(); ex6.name = "Bicep Curls"; ex6.type = "WEIGHT"; db.exerciseDao().insert(ex6);
+        Exercise ex7 = new Exercise(); ex7.name = "Squats"; ex7.type = "WEIGHT"; db.exerciseDao().insert(ex7);
+        Exercise ex8 = new Exercise(); ex8.name = "Deadlifts"; ex8.type = "WEIGHT"; db.exerciseDao().insert(ex8);
+        Exercise ex9 = new Exercise(); ex9.name = "Leg Press"; ex9.type = "WEIGHT"; db.exerciseDao().insert(ex9);
+        Exercise ex10 = new Exercise(); ex10.name = "Running"; ex10.type = "CARDIO"; db.exerciseDao().insert(ex10);
+        Exercise ex11 = new Exercise(); ex11.name = "Cycling"; ex11.type = "CARDIO"; db.exerciseDao().insert(ex11);
+        Exercise ex12 = new Exercise(); ex12.name = "Jump Rope"; ex12.type = "CARDIO"; db.exerciseDao().insert(ex12);
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
-                || super.onSupportNavigateUp();
+        WorkoutPlan plan1 = new WorkoutPlan(); plan1.name = "Push Day"; plan1.exerciseIds = "1, 2, 3"; db.workoutPlanDao().insert(plan1);
+        WorkoutPlan plan2 = new WorkoutPlan(); plan2.name = "Pull Day"; plan2.exerciseIds = "4, 5, 6"; db.workoutPlanDao().insert(plan2);
+        WorkoutPlan plan3 = new WorkoutPlan(); plan3.name = "Leg Day"; plan3.exerciseIds = "7, 8, 9"; db.workoutPlanDao().insert(plan3);
+        WorkoutPlan plan4 = new WorkoutPlan(); plan4.name = "Cardio Day"; plan4.exerciseIds = "10, 11, 12"; db.workoutPlanDao().insert(plan4);
     }
 }
