@@ -1,0 +1,36 @@
+- could add a way to move up/down workouts in the RecylcerView (within options menu, click + drag whitespace in rectangle)
+
+
+- Clean up "Workouts / New Workout button" area
+       -Move "Workouts" down. 
+       -Change "New Workout" button to "+New Workout" on right side
+
+
+We have a lot of real estate at the top. Not sure what we should do.
+Could move the scrolling section up a bit.
+
+
+Change weird icons in workout rectangles to be "..." Icons
+
+
+-------------------
+
+Create some way to simulate completed workout test data
+
+This way we can see how we will implement the "Start Workout" function.
+
+--------------------
+
+Most important:
+Work on "New Workout" screen 
+- some sort of message or graphic indicating no exercises have been added
+- a button to add an exercise
+- ideally a way to search the database to quickly find exercises
+(Will ned to expand database by a lot)
+- a way to add a custom exercise like a + in right of search bar (lesser priority)
+
+
+
+
+
+
