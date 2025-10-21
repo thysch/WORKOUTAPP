@@ -1,6 +1,9 @@
 package com.example.workoutlogger;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,6 +29,15 @@ public class MainActivity extends AppCompatActivity {
 
         workoutList = findViewById(R.id.workout_list);
         workoutList.setLayoutManager(new LinearLayoutManager(this));
+
+        Button newWorkoutButton = findViewById(R.id.new_workout_button);
+        newWorkoutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, AddWorkoutActivity.class);
+                startActivity(intent);
+            }
+        });
 
         loadWorkouts();
     }
