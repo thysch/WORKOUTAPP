@@ -9,12 +9,13 @@ import androidx.room.RoomDatabase;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Exercise.class, WorkoutPlan.class, WorkoutLog.class, Set.class}, version = 1, exportSchema = false)
+@Database(entities = {Exercise.class, WorkoutPlan.class, WorkoutLog.class, Set.class, WorkoutSet.class}, version = 2, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract ExerciseDao exerciseDao();
     public abstract WorkoutPlanDao workoutPlanDao();
     public abstract WorkoutLogDao workoutLogDao();
     public abstract SetDao setDao();
+    public abstract WorkoutSetDao workoutSetDao();
 
     private static volatile AppDatabase INSTANCE;
     private static final int NUMBER_OF_THREADS = 4;
@@ -26,6 +27,7 @@ public abstract class AppDatabase extends RoomDatabase {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             AppDatabase.class, "workout_database")
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }

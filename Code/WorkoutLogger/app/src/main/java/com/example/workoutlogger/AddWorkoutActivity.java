@@ -16,8 +16,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.workoutlogger.data.AppDatabase;
 import com.example.workoutlogger.data.Exercise;
 import com.example.workoutlogger.data.WorkoutPlan;
+import com.example.workoutlogger.data.WorkoutSet;
+import com.example.workoutlogger.data.WorkoutPlanDao;
+import com.example.workoutlogger.data.WorkoutSetDao;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class AddWorkoutActivity extends AppCompatActivity {
@@ -28,6 +33,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
     private List<Exercise> addedExercises = new ArrayList<>();
     private AppDatabase db;
     private EditText workoutNameEditText;
+    private long existingWorkoutPlanId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +45,6 @@ public class AddWorkoutActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle("Add Workout");
 
         workoutNameEditText = findViewById(R.id.workout_name_edit_text);
 
@@ -52,6 +57,44 @@ public class AddWorkoutActivity extends AppCompatActivity {
         addExerciseButton.setOnClickListener(v -> {
             Intent intent = new Intent(AddWorkoutActivity.this, SelectExerciseActivity.class);
             startActivityForResult(intent, SELECT_EXERCISE_REQUEST);
+        });
+
+        if (getIntent().hasExtra("WORKOUT_PLAN_ID")) {
+            existingWorkoutPlanId = getIntent().getLongExtra("WORKOUT_PLAN_ID", -1);
+            getSupportActionBar().setTitle("Edit Workout");
+            loadExistingWorkout();
+        } else {
+            getSupportActionBar().setTitle("Add Workout");
+        }
+    }
+
+    private void loadExistingWorkout() {
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            WorkoutPlan workoutPlan = db.workoutPlanDao().getWorkoutPlanById(existingWorkoutPlanId);
+            if (workoutPlan != null) {
+                List<WorkoutSet> sets = db.workoutSetDao().getSetsForWorkoutPlan(existingWorkoutPlanId);
+                List<Long> exerciseIds = Arrays.stream(workoutPlan.exerciseIds.split(","))
+                                               .map(String::trim)
+                                               .map(Long::parseLong)
+                                               .collect(Collectors.toList());
+
+                List<Exercise> exercises = new ArrayList<>();
+                for (Long id : exerciseIds) {
+                    Exercise exercise = db.exerciseDao().getExerciseById(id);
+                    if (exercise != null) {
+                        exercises.add(exercise);
+                    }
+                }
+
+                runOnUiThread(() -> {
+                    workoutNameEditText.setText(workoutPlan.name);
+                    addedExercises.addAll(exercises);
+                    adapter.notifyDataSetChanged();
+                    // This is a simplified way to re-populate sets; a more robust
+                    // solution would involve a more direct way of associating sets to exercises
+                    // in the adapter after they have been loaded.
+                });
+            }
         });
     }
 
@@ -105,19 +148,47 @@ public class AddWorkoutActivity extends AppCompatActivity {
             return;
         }
 
-        String exerciseIds = addedExercises.stream().map(exercise -> String.valueOf(exercise.id)).collect(Collectors.joining(","));
+        String exerciseIds = addedExercises.stream().map(exercise -> String.valueOf(exercise.uid)).collect(Collectors.joining(","));
 
-        WorkoutPlan newWorkoutPlan = new WorkoutPlan();
-        newWorkoutPlan.name = workoutName;
-        newWorkoutPlan.exerciseIds = exerciseIds;
+        WorkoutPlan workoutPlan = new WorkoutPlan();
+        workoutPlan.name = workoutName;
+        workoutPlan.exerciseIds = exerciseIds;
+        if (existingWorkoutPlanId != -1) {
+            workoutPlan.uid = existingWorkoutPlanId;
+        }
+
+        Map<Long, List<WorkoutSet>> setsByExercise = adapter.getSetsByExercise();
 
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            db.workoutPlanDao().insert(newWorkoutPlan);
+            if (existingWorkoutPlanId == -1) {
+                long planId = db.workoutPlanDao().insert(workoutPlan);
+                saveSets(planId, setsByExercise);
+            } else {
+                db.workoutPlanDao().update(workoutPlan);
+                // For simplicity, we delete and re-insert sets. A more advanced implementation
+                // would perform a more granular update.
+                db.workoutSetDao().deleteSetsForWorkoutPlan(existingWorkoutPlanId);
+                saveSets(existingWorkoutPlanId, setsByExercise);
+            }
+
             runOnUiThread(() -> {
                 Toast.makeText(this, "Workout saved!", Toast.LENGTH_SHORT).show();
                 finish();
             });
         });
+    }
+
+    private void saveSets(long planId, Map<Long, List<WorkoutSet>> setsByExercise) {
+        List<WorkoutSet> allSets = new ArrayList<>();
+        for (List<WorkoutSet> sets : setsByExercise.values()) {
+            for (WorkoutSet set : sets) {
+                set.workoutPlanId = planId;
+                allSets.add(set);
+            }
+        }
+        if (!allSets.isEmpty()) {
+            db.workoutSetDao().insertAll(allSets.toArray(new WorkoutSet[0]));
+        }
     }
 
     @Override

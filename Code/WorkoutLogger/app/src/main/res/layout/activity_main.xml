@@ -6,12 +6,19 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+
+
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.4" />
+        app:layout_constraintGuide_percent="0.2" />
+
+
+
+
 
     <TextView
         android:id="@+id/workouts_title"
@@ -32,6 +39,10 @@
         app:layout_constraintStart_toStartOf="@+id/workouts_title"
         app:layout_constraintTop_toBottomOf="@+id/workouts_title" />
 
+
+
+
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/workout_list"
         android:layout_width="0dp"
@@ -41,6 +52,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/new_workout_button" />
+
+    <Button
+        android:id="@+id/test_share_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"        android:text="Test Share"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation" />
+
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"

@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "workout_plans")
 public class WorkoutPlan {
     @PrimaryKey(autoGenerate = true)
-    public long id;
+    public long uid;
 
     public String name;
 

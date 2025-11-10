@@ -66,7 +66,7 @@ public class SelectExerciseActivity extends AppCompatActivity implements Exercis
     @Override
     public void onItemClick(Exercise exercise) {
         Intent resultIntent = new Intent();
-        resultIntent.putExtra("exerciseId", exercise.id);
+        resultIntent.putExtra("exerciseId", exercise.uid);
         setResult(RESULT_OK, resultIntent);
         finish();
     }

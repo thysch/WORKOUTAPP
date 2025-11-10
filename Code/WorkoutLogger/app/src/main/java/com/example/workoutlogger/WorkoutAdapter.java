@@ -1,5 +1,8 @@
 package com.example.workoutlogger;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,10 +10,12 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.workoutlogger.data.AppDatabase;
 import com.example.workoutlogger.data.Exercise;
 import com.example.workoutlogger.data.WorkoutPlan;
 
@@ -22,6 +27,7 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
 
     private List<WorkoutPlan> workoutPlans;
     private List<Exercise> allExercises;
+    private Context context;
 
     public WorkoutAdapter(List<WorkoutPlan> workoutPlans, List<Exercise> allExercises) {
         this.workoutPlans = workoutPlans;
@@ -31,7 +37,8 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
     @NonNull
     @Override
     public WorkoutViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.workout_item, parent, false);
+        context = parent.getContext();
+        View view = LayoutInflater.from(context).inflate(R.layout.workout_item, parent, false);
         return new WorkoutViewHolder(view);
     }
 
@@ -44,9 +51,13 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
             List<String> exerciseIds = Arrays.asList(workoutPlan.exerciseIds.split(","));
             List<String> exerciseNames = new ArrayList<>();
             for (String idStr : exerciseIds) {
-                Exercise exercise = findExerciseById(Long.parseLong(idStr.trim()));
-                if (exercise != null) {
-                    exerciseNames.add(exercise.name);
+                try {
+                    Exercise exercise = findExerciseById(Long.parseLong(idStr.trim()));
+                    if (exercise != null) {
+                        exerciseNames.add(exercise.name);
+                    }
+                } catch (NumberFormatException e) {
+                    // Ignore if an id is malformed
                 }
             }
             holder.exerciseList.setText(String.join(", ", exerciseNames));
@@ -57,7 +68,38 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
         holder.optionsButton.setOnClickListener(v -> {
             PopupMenu popup = new PopupMenu(v.getContext(), v);
             popup.getMenuInflater().inflate(R.menu.workout_options_menu, popup.getMenu());
+
+            popup.setOnMenuItemClickListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.delete_workout) {
+                    deleteWorkout(workoutPlan, holder.getAdapterPosition());
+                    return true;
+                } else if (itemId == R.id.edit_workout) {
+                    editWorkout(workoutPlan);
+                    return true;
+                }
+                return false;
+            });
             popup.show();
+        });
+    }
+
+    private void editWorkout(WorkoutPlan workoutPlan) {
+        Intent intent = new Intent(context, AddWorkoutActivity.class);
+        intent.putExtra("WORKOUT_PLAN_ID", workoutPlan.uid);
+        context.startActivity(intent);
+    }
+
+    private void deleteWorkout(WorkoutPlan workoutPlan, int position) {
+        AppDatabase db = AppDatabase.getDatabase(context.getApplicationContext());
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            db.workoutPlanDao().delete(workoutPlan);
+            ((Activity) context).runOnUiThread(() -> {
+                workoutPlans.remove(position);
+                notifyItemRemoved(position);
+                notifyItemRangeChanged(position, workoutPlans.size());
+                Toast.makeText(context, "Workout Deleted", Toast.LENGTH_SHORT).show();
+            });
         });
     }
 
@@ -68,7 +110,7 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
 
     private Exercise findExerciseById(long id) {
         for (Exercise exercise : allExercises) {
-            if (exercise.id == id) {
+            if (exercise.uid == id) {
                 return exercise;
             }
         }
