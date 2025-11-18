@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private AppDatabase db;
     private WorkoutAdapter adapter;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
