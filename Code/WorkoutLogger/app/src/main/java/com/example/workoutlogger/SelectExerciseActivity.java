@@ -35,30 +35,39 @@ public class SelectExerciseActivity extends AppCompatActivity implements Exercis
 
         searchView = findViewById(R.id.exercise_search_view);
 
-        loadExercises();
+        loadExercises("");
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
+                loadExercises(query);
                 return false;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                if (adapter != null) {
-                    adapter.getFilter().filter(newText);
-                }
+                loadExercises(newText);
                 return false;
             }
         });
     }
 
-    private void loadExercises() {
+    private void loadExercises(String query) {
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            List<Exercise> exercises = db.exerciseDao().getAllExercises();
+            List<Exercise> exercises;
+            if (query.isEmpty()) {
+                exercises = db.exerciseDao().getAllExercises();
+            } else {
+                exercises = db.exerciseDao().searchExercises("%" + query + "%");
+            }
+
             runOnUiThread(() -> {
-                adapter = new ExerciseSelectionAdapter(exercises, this);
-                exerciseSelectionList.setAdapter(adapter);
+                if (adapter == null) {
+                    adapter = new ExerciseSelectionAdapter(exercises, this);
+                    exerciseSelectionList.setAdapter(adapter);
+                } else {
+                    adapter.updateExercises(exercises);
+                }
             });
         });
     }

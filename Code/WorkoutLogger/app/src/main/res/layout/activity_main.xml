@@ -6,61 +6,32 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-
-
-
     <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline"
+        android:id="@+id/guideline_top"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.2" />
-
-
-
-
-
-    <TextView
-        android:id="@+id/workouts_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="Workouts"
-        android:textAppearance="@style/TextAppearance.App.Medium.Bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline" />
-
-    <Button
-        android:id="@+id/new_workout_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="+ Add Workout"
-        app:layout_constraintStart_toStartOf="@+id/workouts_title"
-        app:layout_constraintTop_toBottomOf="@+id/workouts_title" />
-
-
-
-
+        app:layout_constraintGuide_percent="0.3" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/workout_list"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:padding="8dp"
         app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/new_workout_button" />
+        app:layout_constraintTop_toTopOf="@id/guideline_top" />
 
-    <Button
-        android:id="@+id/test_share_button"
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/new_workout_button"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"        android:text="Test Share"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation" />
-
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_add"
+        app:layout_constraintBottom_toTopOf="@+id/bottom_navigation"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"

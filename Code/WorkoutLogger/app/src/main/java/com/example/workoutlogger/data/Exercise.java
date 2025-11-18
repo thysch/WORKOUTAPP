@@ -12,4 +12,7 @@ public class Exercise {
 
     // Type can be "WEIGHT" or "CARDIO" to distinguish the exercise type
     public String type;
+
+    // Comma-separated list of tags (e.g., "Chest,Triceps,Push")
+    public String tags;
 }

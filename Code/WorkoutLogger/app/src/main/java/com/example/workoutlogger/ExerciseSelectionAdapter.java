@@ -3,22 +3,15 @@ package com.example.workoutlogger;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Filter;
-import android.widget.Filterable;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.workoutlogger.data.Exercise;
-
-import java.util.ArrayList;
 import java.util.List;
 
-public class ExerciseSelectionAdapter extends RecyclerView.Adapter<ExerciseSelectionAdapter.ExerciseViewHolder> implements Filterable {
+public class ExerciseSelectionAdapter extends RecyclerView.Adapter<ExerciseSelectionAdapter.ExerciseViewHolder> {
 
     private List<Exercise> exercises;
-    private List<Exercise> exercisesFull;
     private OnItemClickListener listener;
 
     public interface OnItemClickListener {
@@ -27,7 +20,6 @@ public class ExerciseSelectionAdapter extends RecyclerView.Adapter<ExerciseSelec
 
     public ExerciseSelectionAdapter(List<Exercise> exercises, OnItemClickListener listener) {
         this.exercises = exercises;
-        this.exercisesFull = new ArrayList<>(exercises);
         this.listener = listener;
     }
 
@@ -50,39 +42,11 @@ public class ExerciseSelectionAdapter extends RecyclerView.Adapter<ExerciseSelec
         return exercises.size();
     }
 
-    @Override
-    public Filter getFilter() {
-        return exerciseFilter;
+    public void updateExercises(List<Exercise> newExercises) {
+        this.exercises.clear();
+        this.exercises.addAll(newExercises);
+        notifyDataSetChanged();
     }
-
-    private Filter exerciseFilter = new Filter() {
-        @Override
-        protected FilterResults performFiltering(CharSequence constraint) {
-            List<Exercise> filteredList = new ArrayList<>();
-
-            if (constraint == null || constraint.length() == 0) {
-                filteredList.addAll(exercisesFull);
-            } else {
-                String filterPattern = constraint.toString().toLowerCase().trim();
-                for (Exercise item : exercisesFull) {
-                    if (item.name.toLowerCase().contains(filterPattern)) {
-                        filteredList.add(item);
-                    }
-                }
-            }
-
-            FilterResults results = new FilterResults();
-            results.values = filteredList;
-            return results;
-        }
-
-        @Override
-        protected void publishResults(CharSequence constraint, FilterResults results) {
-            exercises.clear();
-            exercises.addAll((List) results.values);
-            notifyDataSetChanged();
-        }
-    };
 
     static class ExerciseViewHolder extends RecyclerView.ViewHolder {
         TextView exerciseName;

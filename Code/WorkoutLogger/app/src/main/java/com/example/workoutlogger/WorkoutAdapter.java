@@ -117,6 +117,13 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
         return null;
     }
 
+    public void updateData(List<WorkoutPlan> newWorkoutPlans, List<Exercise> newAllExercises) {
+        this.workoutPlans = newWorkoutPlans;
+        this.allExercises = newAllExercises;
+        notifyDataSetChanged();
+    }
+
+
     static class WorkoutViewHolder extends RecyclerView.ViewHolder {
         TextView workoutName;
         TextView exerciseList;

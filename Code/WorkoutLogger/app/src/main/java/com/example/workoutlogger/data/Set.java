@@ -1,12 +1,23 @@
 package com.example.workoutlogger.data;
 
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "sets")
+@Entity(tableName = "sets",
+        foreignKeys = {
+                @ForeignKey(entity = Exercise.class,
+                        parentColumns = "uid",
+                        childColumns = "exerciseId",
+                        onDelete = ForeignKey.CASCADE),
+                @ForeignKey(entity = WorkoutLog.class,
+                        parentColumns = "uid",
+                        childColumns = "workoutLogId",
+                        onDelete = ForeignKey.CASCADE)
+        })
 public class Set {
     @PrimaryKey(autoGenerate = true)
-    public long id;
+    public long uid;
 
     public long workoutLogId;
     public long exerciseId;

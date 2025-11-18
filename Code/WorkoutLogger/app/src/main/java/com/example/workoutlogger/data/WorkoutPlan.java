@@ -10,6 +10,6 @@ public class WorkoutPlan {
 
     public String name;
 
-    // Comma-separated list of exercise IDs in this plan
+    // Comma-separated list of exercise IDs
     public String exerciseIds;
 }

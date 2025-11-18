@@ -9,8 +9,11 @@ import java.util.List;
 @Dao
 public interface WorkoutLogDao {
     @Insert
-    void insert(WorkoutLog workoutLog);
+    long insert(WorkoutLog workoutLog);
 
     @Query("SELECT * FROM workout_logs")
     List<WorkoutLog> getAllWorkoutLogs();
+
+    @Query("SELECT * FROM workout_logs WHERE uid = :workoutLogId")
+    WorkoutLog getWorkoutLogById(long workoutLogId);
 }

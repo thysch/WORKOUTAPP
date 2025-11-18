@@ -9,7 +9,7 @@ import java.util.List;
 @Dao
 public interface ExerciseDao {
     @Insert
-    void insert(Exercise exercise);
+    long insert(Exercise exercise);
 
     @Query("SELECT * FROM exercises")
     List<Exercise> getAllExercises();
@@ -17,4 +17,6 @@ public interface ExerciseDao {
     @Query("SELECT * FROM exercises WHERE uid = :exerciseId")
     Exercise getExerciseById(long exerciseId);
 
+    @Query("SELECT * FROM exercises WHERE name LIKE :query OR tags LIKE :query")
+    List<Exercise> searchExercises(String query);
 }

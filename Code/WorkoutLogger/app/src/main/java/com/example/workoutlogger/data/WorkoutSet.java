@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "workout_sets",
         foreignKeys = {
                 @ForeignKey(entity = Exercise.class,
-                        parentColumns = "uid", // Changed from "uid" to "id"
+                        parentColumns = "uid",
                         childColumns = "exerciseId",
                         onDelete = ForeignKey.CASCADE),
                 @ForeignKey(entity = WorkoutPlan.class,
@@ -15,7 +15,6 @@ import androidx.room.PrimaryKey;
                         childColumns = "workoutPlanId",
                         onDelete = ForeignKey.CASCADE)
         })
-
 public class WorkoutSet {
     @PrimaryKey(autoGenerate = true)
     public long uid;

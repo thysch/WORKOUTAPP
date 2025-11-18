@@ -9,7 +9,7 @@ import java.util.List;
 @Dao
 public interface WorkoutSetDao {
     @Insert
-    void insertAll(WorkoutSet... workoutSets);
+    long[] insertAll(WorkoutSet... workoutSets);
 
     @Query("SELECT * FROM workout_sets WHERE workoutPlanId = :planId")
     List<WorkoutSet> getSetsForWorkoutPlan(long planId);

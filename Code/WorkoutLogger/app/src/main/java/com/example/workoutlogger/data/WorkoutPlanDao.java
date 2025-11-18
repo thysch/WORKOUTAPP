@@ -16,8 +16,8 @@ public interface WorkoutPlanDao {
     @Query("SELECT * FROM workout_plans")
     List<WorkoutPlan> getAllWorkoutPlans();
 
-    @Query("SELECT * FROM workout_plans WHERE uid = :id")
-    WorkoutPlan getWorkoutPlanById(long id);
+    @Query("SELECT * FROM workout_plans WHERE uid = :workoutPlanId")
+    WorkoutPlan getWorkoutPlanById(long workoutPlanId);
 
     @Update
     void update(WorkoutPlan workoutPlan);

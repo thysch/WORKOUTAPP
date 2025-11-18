@@ -74,7 +74,7 @@
                                     android:id="@+id/profile_name"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Tim's Workouts"
+                                    android:text="Tim S"
                                     android:textStyle="bold"
                                     android:textSize="18sp"/>
 

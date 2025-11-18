@@ -9,7 +9,7 @@ import java.util.List;
 @Dao
 public interface SetDao {
     @Insert
-    void insert(Set set);
+    long insert(Set set);
 
     @Query("SELECT * FROM sets WHERE workoutLogId = :workoutLogId")
     List<Set> getSetsForWorkoutLog(long workoutLogId);
