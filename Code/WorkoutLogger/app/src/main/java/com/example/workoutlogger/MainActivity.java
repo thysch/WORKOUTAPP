@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.workoutlogger.data.AppDatabase;
@@ -13,6 +14,7 @@ import com.example.workoutlogger.data.WorkoutPlan;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView workoutList;
     private AppDatabase db;
     private WorkoutAdapter adapter;
+    private List<WorkoutPlan> workoutPlans;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +33,25 @@ public class MainActivity extends AppCompatActivity {
 
         workoutList = findViewById(R.id.workout_list);
         workoutList.setLayoutManager(new LinearLayoutManager(this));
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                int fromPosition = viewHolder.getAdapterPosition();
+                int toPosition = target.getAdapterPosition();
+                Collections.swap(workoutPlans, fromPosition, toPosition);
+                adapter.notifyItemMoved(fromPosition, toPosition);
+                updateWorkoutOrder();
+                return true;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            }
+        });
+
+        itemTouchHelper.attachToRecyclerView(workoutList);
 
         FloatingActionButton newWorkoutButton = findViewById(R.id.new_workout_button);
         newWorkoutButton.setOnClickListener(v -> {
@@ -55,23 +77,42 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
-        // Initial data seeding if necessary
+        // Initial data loading and seeding
         AppDatabase.databaseWriteExecutor.execute(() -> {
             if (db.exerciseDao().getAllExercises().isEmpty()) {
                 seedData();
             }
+            // Always load data after checking for seeding
+            runOnUiThread(this::loadWorkouts);
+        });
+    }
+
+    private void updateWorkoutOrder() {
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            for (int i = 0; i < workoutPlans.size(); i++) {
+                workoutPlans.get(i).displayOrder = i + 1;
+            }
+            db.workoutPlanDao().updateAll(workoutPlans);
         });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        // We call loadWorkouts here as well to refresh the data when the user
+        // navigates back to this screen after adding/editing a workout.
         loadWorkouts();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        AppDatabase.shutdown();
     }
 
     private void loadWorkouts() {
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            List<WorkoutPlan> workoutPlans = db.workoutPlanDao().getAllWorkoutPlans();
+            workoutPlans = db.workoutPlanDao().getAllWorkoutPlans();
             List<Exercise> allExercises = db.exerciseDao().getAllExercises();
 
             runOnUiThread(() -> {
@@ -100,9 +141,9 @@ public class MainActivity extends AppCompatActivity {
         Exercise ex11 = new Exercise(); ex11.name = "Cycling"; ex11.type = "CARDIO"; ex11.tags = "Cardio,Legs"; long id11 = db.exerciseDao().insert(ex11);
         Exercise ex12 = new Exercise(); ex12.name = "Jump Rope"; ex12.type = "CARDIO"; ex12.tags = "Cardio,Calves"; long id12 = db.exerciseDao().insert(ex12);
 
-        WorkoutPlan plan1 = new WorkoutPlan(); plan1.name = "Push Day"; plan1.exerciseIds = id1 + "," + id2 + "," + id3; db.workoutPlanDao().insert(plan1);
-        WorkoutPlan plan2 = new WorkoutPlan(); plan2.name = "Pull Day"; plan2.exerciseIds = id4 + "," + id5 + "," + id6; db.workoutPlanDao().insert(plan2);
-        WorkoutPlan plan3 = new WorkoutPlan(); plan3.name = "Leg Day"; plan3.exerciseIds = id7 + "," + id8 + "," + id9; db.workoutPlanDao().insert(plan3);
-        WorkoutPlan plan4 = new WorkoutPlan(); plan4.name = "Cardio Day"; plan4.exerciseIds = id10 + "," + id11 + "," + id12; db.workoutPlanDao().insert(plan4);
+        WorkoutPlan plan1 = new WorkoutPlan(); plan1.name = "Push Day"; plan1.exerciseIds = id1 + "," + id2 + "," + id3; plan1.displayOrder = 1; db.workoutPlanDao().insert(plan1);
+        WorkoutPlan plan2 = new WorkoutPlan(); plan2.name = "Pull Day"; plan2.exerciseIds = id4 + "," + id5 + "," + id6; plan2.displayOrder = 2; db.workoutPlanDao().insert(plan2);
+        WorkoutPlan plan3 = new WorkoutPlan(); plan3.name = "Leg Day"; plan3.exerciseIds = id7 + "," + id8 + "," + id9; plan3.displayOrder = 3; db.workoutPlanDao().insert(plan3);
+        WorkoutPlan plan4 = new WorkoutPlan(); plan4.name = "Cardio Day"; plan4.exerciseIds = id10 + "," + id11 + "," + id12; plan4.displayOrder = 4; db.workoutPlanDao().insert(plan4);
     }
 }

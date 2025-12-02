@@ -22,7 +22,9 @@ public class WorkoutSet {
     public long exerciseId;
     public long workoutPlanId;
 
-    public String reps;
+    public String plannedReps; // Used for rep ranges like "5-8"
+    public int actualReps;    // Used for the actual logged number of reps
+
     public float weight;
     public int setNumber;
 }

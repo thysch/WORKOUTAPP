@@ -14,17 +14,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ImageButton
-        android:id="@+id/delete_set_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="?android:attr/selectableItemBackground"
-        android:src="@drawable/ic_delete"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- This chain packs the Reps and Weight fields together in the available space -->
     <TextView
         android:id="@+id/reps_label"
         android:layout_width="wrap_content"
@@ -42,7 +31,7 @@
         android:layout_marginStart="4dp"
         android:gravity="center"
         android:hint="8-12"
-        android:inputType="text"
+        android:inputType="number"
         app:layout_constraintBaseline_toBaselineOf="@+id/reps_label"
         app:layout_constraintEnd_toStartOf="@+id/weight_label"
         app:layout_constraintStart_toEndOf="@+id/reps_label" />
@@ -66,7 +55,15 @@
         android:hint="0.0"
         android:inputType="numberDecimal"
         app:layout_constraintBaseline_toBaselineOf="@+id/weight_label"
-        app:layout_constraintEnd_toStartOf="@+id/delete_set_button"
+        app:layout_constraintEnd_toStartOf="@+id/set_complete_checkbox"
         app:layout_constraintStart_toEndOf="@+id/weight_label" />
+
+    <CheckBox
+        android:id="@+id/set_complete_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

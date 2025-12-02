@@ -1,59 +1,33 @@
 package com.example.workoutlogger;
 
-import android.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.workoutlogger.data.Exercise;
 import com.example.workoutlogger.data.WorkoutSet;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AddedExercisesAdapter extends RecyclerView.Adapter<AddedExercisesAdapter.ExerciseViewHolder> {
-
-    public interface OnDataChangedListener {
-        void onDataChanged();
-    }
+public class StartWorkoutExerciseAdapter extends RecyclerView.Adapter<StartWorkoutExerciseAdapter.ExerciseViewHolder> {
 
     private List<Exercise> exercises;
-    private final OnDataChangedListener dataChangedListener;
     private Map<Long, List<WorkoutSet>> setsByExercise = new HashMap<>();
+    private StartWorkoutSetAdapter.OnVolumeChangedListener volumeChangedListener;
 
-    public AddedExercisesAdapter(List<Exercise> exercises, OnDataChangedListener listener) {
+    public StartWorkoutExerciseAdapter(List<Exercise> exercises, StartWorkoutSetAdapter.OnVolumeChangedListener listener) {
         this.exercises = exercises;
-        this.dataChangedListener = listener;
-    }
-
-    public void updateExercises(List<Exercise> newExercises) {
-        this.exercises.clear();
-        this.exercises.addAll(newExercises);
-        notifyDataSetChanged();
-    }
-
-    @NonNull
-    @Override
-    public ExerciseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.added_exercise_item, parent, false);
-        return new ExerciseViewHolder(view);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull ExerciseViewHolder holder, int position) {
-        holder.bind(exercises.get(position));
-    }
-
-    @Override
-    public int getItemCount() {
-        return exercises.size();
+        this.volumeChangedListener = listener;
     }
 
     public Map<Long, List<WorkoutSet>> getSetsByExercise() {
@@ -73,19 +47,34 @@ public class AddedExercisesAdapter extends RecyclerView.Adapter<AddedExercisesAd
         }
     }
 
+    @NonNull
+    @Override
+    public ExerciseViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.start_workout_exercise_item, parent, false);
+        return new ExerciseViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ExerciseViewHolder holder, int position) {
+        holder.bind(exercises.get(position));
+    }
+
+    @Override
+    public int getItemCount() {
+        return exercises.size();
+    }
+
     class ExerciseViewHolder extends RecyclerView.ViewHolder {
         TextView exerciseNameTextView;
         Button addSetButton;
-        ImageButton deleteExerciseButton;
         RecyclerView setsRecyclerView;
-        SetAdapter setAdapter;
+        StartWorkoutSetAdapter setAdapter;
         ImageView expandCollapseIndicator;
 
         public ExerciseViewHolder(@NonNull View itemView) {
             super(itemView);
             exerciseNameTextView = itemView.findViewById(R.id.exercise_name_text_view);
             addSetButton = itemView.findViewById(R.id.add_set_button);
-            deleteExerciseButton = itemView.findViewById(R.id.delete_exercise_button);
             setsRecyclerView = itemView.findViewById(R.id.sets_recycler_view);
             expandCollapseIndicator = itemView.findViewById(R.id.expand_collapse_indicator);
         }
@@ -99,7 +88,7 @@ public class AddedExercisesAdapter extends RecyclerView.Adapter<AddedExercisesAd
             }
 
             List<WorkoutSet> sets = setsByExercise.get(exerciseId);
-            setAdapter = new SetAdapter(sets, dataChangedListener);
+            setAdapter = new StartWorkoutSetAdapter(sets, volumeChangedListener);
             setsRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
             setsRecyclerView.setAdapter(setAdapter);
 
@@ -110,29 +99,6 @@ public class AddedExercisesAdapter extends RecyclerView.Adapter<AddedExercisesAd
                 newSet.setNumber = setNumber;
                 sets.add(newSet);
                 setAdapter.notifyItemInserted(sets.size() - 1);
-                if (dataChangedListener != null) {
-                    dataChangedListener.onDataChanged();
-                }
-            });
-
-            deleteExerciseButton.setOnClickListener(v -> {
-                new AlertDialog.Builder(itemView.getContext())
-                        .setTitle("Delete Exercise")
-                        .setMessage("Are you sure you want to delete this exercise and all its sets?")
-                        .setPositiveButton("Delete", (dialog, which) -> {
-                            int position = getAdapterPosition();
-                            if (position != RecyclerView.NO_POSITION) {
-                                exercises.remove(position);
-                                setsByExercise.remove(exercise.uid);
-                                notifyItemRemoved(position);
-                                notifyItemRangeChanged(position, exercises.size());
-                                if (dataChangedListener != null) {
-                                    dataChangedListener.onDataChanged();
-                                }
-                            }
-                        })
-                        .setNegativeButton("Cancel", null)
-                        .show();
             });
 
             View.OnClickListener expandCollapseListener = v -> {
