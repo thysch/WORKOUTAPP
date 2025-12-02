@@ -9,8 +9,8 @@ import java.util.List;
 @Dao
 public interface SetDao {
     @Insert
-    long insert(Set set);
+    void insertAll(Set... sets);
 
-    @Query("SELECT * FROM sets WHERE workoutLogId = :workoutLogId")
+    @Query("SELECT * FROM sets WHERE workoutLogId = :workoutLogId ORDER BY setNumber ASC")
     List<Set> getSetsForWorkoutLog(long workoutLogId);
 }

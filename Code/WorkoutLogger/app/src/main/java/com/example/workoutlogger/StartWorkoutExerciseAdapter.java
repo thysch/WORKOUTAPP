@@ -1,10 +1,13 @@
 package com.example.workoutlogger;
 
+import android.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -23,15 +26,11 @@ public class StartWorkoutExerciseAdapter extends RecyclerView.Adapter<StartWorko
 
     private List<Exercise> exercises;
     private Map<Long, List<WorkoutSet>> setsByExercise = new HashMap<>();
-    private StartWorkoutSetAdapter.OnVolumeChangedListener volumeChangedListener;
+    private final StartWorkoutSetAdapter.OnVolumeChangedListener volumeChangedListener;
 
     public StartWorkoutExerciseAdapter(List<Exercise> exercises, StartWorkoutSetAdapter.OnVolumeChangedListener listener) {
         this.exercises = exercises;
         this.volumeChangedListener = listener;
-    }
-
-    public Map<Long, List<WorkoutSet>> getSetsByExercise() {
-        return setsByExercise;
     }
 
     public void populateSets(List<WorkoutSet> allSets) {
@@ -45,6 +44,10 @@ public class StartWorkoutExerciseAdapter extends RecyclerView.Adapter<StartWorko
             }
             setsByExercise.get(set.exerciseId).add(set);
         }
+    }
+
+    public Map<Long, List<WorkoutSet>> getSetsByExercise() {
+        return setsByExercise;
     }
 
     @NonNull
@@ -70,6 +73,7 @@ public class StartWorkoutExerciseAdapter extends RecyclerView.Adapter<StartWorko
         RecyclerView setsRecyclerView;
         StartWorkoutSetAdapter setAdapter;
         ImageView expandCollapseIndicator;
+        ImageButton optionsButton;
 
         public ExerciseViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -77,6 +81,7 @@ public class StartWorkoutExerciseAdapter extends RecyclerView.Adapter<StartWorko
             addSetButton = itemView.findViewById(R.id.add_set_button);
             setsRecyclerView = itemView.findViewById(R.id.sets_recycler_view);
             expandCollapseIndicator = itemView.findViewById(R.id.expand_collapse_indicator);
+            optionsButton = itemView.findViewById(R.id.options_button);
         }
 
         public void bind(final Exercise exercise) {
@@ -99,6 +104,37 @@ public class StartWorkoutExerciseAdapter extends RecyclerView.Adapter<StartWorko
                 newSet.setNumber = setNumber;
                 sets.add(newSet);
                 setAdapter.notifyItemInserted(sets.size() - 1);
+                if (volumeChangedListener != null) {
+                    volumeChangedListener.onVolumeChanged();
+                }
+            });
+
+            optionsButton.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(v.getContext(), v);
+                popup.getMenuInflater().inflate(R.menu.exercise_options_menu, popup.getMenu());
+                popup.setOnMenuItemClickListener(item -> {
+                    if (item.getItemId() == R.id.delete_exercise) {
+                        new AlertDialog.Builder(itemView.getContext())
+                                .setTitle("Delete Exercise")
+                                .setMessage("Are you sure you want to delete this exercise from the workout?")
+                                .setPositiveButton("Delete", (dialog, which) -> {
+                                    int position = getAdapterPosition();
+                                    if (position != RecyclerView.NO_POSITION) {
+                                        exercises.remove(position);
+                                        notifyItemRemoved(position);
+                                        notifyItemRangeChanged(position, exercises.size());
+                                        if (volumeChangedListener != null) {
+                                            volumeChangedListener.onVolumeChanged();
+                                        }
+                                    }
+                                })
+                                .setNegativeButton("Cancel", null)
+                                .show();
+                        return true;
+                    }
+                    return false;
+                });
+                popup.show();
             });
 
             View.OnClickListener expandCollapseListener = v -> {

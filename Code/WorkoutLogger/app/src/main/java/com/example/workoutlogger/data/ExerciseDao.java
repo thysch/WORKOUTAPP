@@ -19,4 +19,14 @@ public interface ExerciseDao {
 
     @Query("SELECT * FROM exercises WHERE name LIKE :query OR tags LIKE :query")
     List<Exercise> searchExercises(String query);
+
+    /**
+     * Selects all exercises from the Exercise table that have an ID in the provided list.
+     * @param exerciseIds A list of exercise IDs to fetch.
+     * @return A List of Exercise objects matching the given IDs.
+     */
+    @Query("SELECT * FROM exercises WHERE uid IN (:exerciseIds)")
+    List<Exercise> getExercisesByIds(List<Long> exerciseIds);
+
+
 }

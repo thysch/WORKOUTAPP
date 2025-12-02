@@ -28,6 +28,13 @@
         <activity android:name=".SelectExerciseActivity" />
         <activity android:name=".ProfileActivity" />
         <activity android:name=".ShareWorkoutActivity" />
+
+        <activity
+            android:name=".WorkoutHistoryActivity"
+            android:exported="false" />
+
+
+
     </application>
 
 </manifest>

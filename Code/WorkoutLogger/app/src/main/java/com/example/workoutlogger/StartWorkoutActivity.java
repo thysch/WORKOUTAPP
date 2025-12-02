@@ -4,17 +4,26 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.widget.Chronometer;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.workoutlogger.data.AppDatabase;
 import com.example.workoutlogger.data.Exercise;
+import com.example.workoutlogger.data.WorkoutLog;
 import com.example.workoutlogger.data.WorkoutPlan;
+import com.example.workoutlogger.data.Set;
 import com.example.workoutlogger.data.WorkoutSet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,6 +36,8 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
     private TextView totalVolumeTextView;
     private RecyclerView exercisesRecyclerView;
     private StartWorkoutExerciseAdapter adapter;
+    private List<Exercise> exercises;
+    private float totalVolume = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +58,26 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
         exercisesRecyclerView = findViewById(R.id.exercises_recycler_view);
         exercisesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                int fromPosition = viewHolder.getAdapterPosition();
+                int toPosition = target.getAdapterPosition();
+                if (exercises != null) {
+                    Collections.swap(exercises, fromPosition, toPosition);
+                    adapter.notifyItemMoved(fromPosition, toPosition);
+                }
+                return true;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+
+            }
+        });
+
+        itemTouchHelper.attachToRecyclerView(exercisesRecyclerView);
+
         uptimeChronometer.setBase(SystemClock.elapsedRealtime());
         uptimeChronometer.start();
 
@@ -57,7 +88,7 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
         AppDatabase.databaseWriteExecutor.execute(() -> {
             WorkoutPlan workoutPlan = db.workoutPlanDao().getWorkoutPlanById(workoutPlanId);
             if (workoutPlan != null) {
-                List<Exercise> exercises = new ArrayList<>();
+                exercises = new ArrayList<>();
                 if (workoutPlan.exerciseIds != null && !workoutPlan.exerciseIds.isEmpty()) {
                     List<Long> exerciseIds = Arrays.stream(workoutPlan.exerciseIds.split(","))
                                                    .map(String::trim)
@@ -94,22 +125,75 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
     }
 
     private void calculateTotalVolume() {
-        float totalVolume = 0;
+        totalVolume = 0;
         if (adapter != null) {
             Map<Long, List<WorkoutSet>> setsByExercise = adapter.getSetsByExercise();
             for (List<WorkoutSet> sets : setsByExercise.values()) {
                 for (WorkoutSet set : sets) {
-                    try {
-                        int reps = Integer.parseInt(set.plannedReps);
-                        float weight = set.weight;
-                        totalVolume += reps * weight;
-                    } catch (NumberFormatException e) {
-                        // Ignore if reps is not a valid number
+                    if (set.isCompleted) {
+                        try {
+                            int reps = Integer.parseInt(set.plannedReps);
+                            float weight = set.weight;
+                            totalVolume += reps * weight;
+                        } catch (NumberFormatException e) {
+                            // Ignore if reps is not a valid number
+                        }
                     }
                 }
             }
         }
         totalVolumeTextView.setText("Total Volume: " + totalVolume + " lbs");
+    }
+
+    private void saveWorkout() {
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            WorkoutLog workoutLog = new WorkoutLog();
+            workoutLog.planId = workoutPlanId;
+            workoutLog.date = new Date().getTime();
+            workoutLog.duration = SystemClock.elapsedRealtime() - uptimeChronometer.getBase();
+            workoutLog.totalVolume = totalVolume;
+            workoutLog.workoutName = getSupportActionBar().getTitle().toString();
+
+            long workoutLogId = db.workoutLogDao().insert(workoutLog);
+
+            List<Set> setsToSave = new ArrayList<>();
+            Map<Long, List<WorkoutSet>> setsByExercise = adapter.getSetsByExercise();
+
+            for (Map.Entry<Long, List<WorkoutSet>> entry : setsByExercise.entrySet()) {
+                long exerciseId = entry.getKey();
+                List<WorkoutSet> completedSets = entry.getValue();
+
+                for (int i = 0; i < completedSets.size(); i++) {
+                    WorkoutSet completedSet = completedSets.get(i);
+                    if (completedSet.isCompleted) {
+                        Set setToSave = new Set();
+                        setToSave.workoutLogId = workoutLogId;
+                        setToSave.exerciseId = exerciseId;
+                        setToSave.reps = Integer.parseInt(completedSet.plannedReps);
+                        setToSave.weight = completedSet.weight;
+                        setToSave.setNumber = i + 1;
+                        setsToSave.add(setToSave);
+                    }
+                }
+            }
+
+            db.setDao().insertAll(setsToSave.toArray(new Set[0]));
+
+            runOnUiThread(() -> {
+                Toast.makeText(this, "Workout Saved!", Toast.LENGTH_SHORT).show();
+                finish();
+            });
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setTitle("Discard workout?")
+                .setMessage("Do you want to save this workout session?")
+                .setPositiveButton("Save", (dialog, which) -> saveWorkout())
+                .setNegativeButton("Discard", (dialog, which) -> finish())
+                .show();
     }
 
     @Override
