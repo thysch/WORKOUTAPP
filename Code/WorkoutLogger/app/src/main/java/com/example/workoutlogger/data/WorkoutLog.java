@@ -19,4 +19,13 @@ public class WorkoutLog {
 
     // The date the workout was performed, stored as a long (milliseconds)
     public long date;
+
+    // The duration of the workout in seconds
+    public long duration;
+
+    // The total volume lifted in the workout
+    public float totalVolume;
+
+    // The name of the workout plan at the time of logging
+    public String workoutName;
 }
