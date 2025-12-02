@@ -219,9 +219,11 @@ public class AddWorkoutActivity extends AppCompatActivity {
 
     private void saveSets(long planId, Map<Long, List<WorkoutSet>> setsByExercise) {
         List<WorkoutSet> allSets = new ArrayList<>();
-        for (List<WorkoutSet> sets : setsByExercise.values()) {
-            for (WorkoutSet set : sets) {
+        for (Map.Entry<Long, List<WorkoutSet>> entry : setsByExercise.entrySet()) {
+            long exerciseId = entry.getKey();
+            for (WorkoutSet set : entry.getValue()) {
                 set.workoutPlanId = planId;
+                set.exerciseId = exerciseId;
                 allSets.add(set);
             }
         }

@@ -24,13 +24,19 @@ import java.util.Map;
 
 public class StartWorkoutExerciseAdapter extends RecyclerView.Adapter<StartWorkoutExerciseAdapter.ExerciseViewHolder> {
 
+    public interface OnWorkoutCompleteListener {
+        void onWorkoutComplete();
+    }
+
     private List<Exercise> exercises;
     private Map<Long, List<WorkoutSet>> setsByExercise = new HashMap<>();
     private final StartWorkoutSetAdapter.OnVolumeChangedListener volumeChangedListener;
+    private final OnWorkoutCompleteListener workoutCompleteListener;
 
-    public StartWorkoutExerciseAdapter(List<Exercise> exercises, StartWorkoutSetAdapter.OnVolumeChangedListener listener) {
+    public StartWorkoutExerciseAdapter(List<Exercise> exercises, StartWorkoutSetAdapter.OnVolumeChangedListener volumeListener, OnWorkoutCompleteListener completeListener) {
         this.exercises = exercises;
-        this.volumeChangedListener = listener;
+        this.volumeChangedListener = volumeListener;
+        this.workoutCompleteListener = completeListener;
     }
 
     public void populateSets(List<WorkoutSet> allSets) {
@@ -93,7 +99,7 @@ public class StartWorkoutExerciseAdapter extends RecyclerView.Adapter<StartWorko
             }
 
             List<WorkoutSet> sets = setsByExercise.get(exerciseId);
-            setAdapter = new StartWorkoutSetAdapter(sets, volumeChangedListener);
+            setAdapter = new StartWorkoutSetAdapter(sets, exercise.type, volumeChangedListener, workoutCompleteListener);
             setsRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
             setsRecyclerView.setAdapter(setAdapter);
 

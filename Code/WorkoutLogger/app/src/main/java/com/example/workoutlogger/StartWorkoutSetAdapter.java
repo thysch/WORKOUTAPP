@@ -15,30 +15,53 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.workoutlogger.data.WorkoutSet;
 import java.util.List;
 
-public class StartWorkoutSetAdapter extends RecyclerView.Adapter<StartWorkoutSetAdapter.SetViewHolder> {
+public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     public interface OnVolumeChangedListener {
         void onVolumeChanged();
     }
 
+    private static final int VIEW_TYPE_WEIGHT = 1;
+    private static final int VIEW_TYPE_CARDIO = 2;
+
     private List<WorkoutSet> sets;
     private OnVolumeChangedListener volumeChangedListener;
+    private final StartWorkoutExerciseAdapter.OnWorkoutCompleteListener workoutCompleteListener;
+    private final String exerciseType;
 
-    public StartWorkoutSetAdapter(List<WorkoutSet> sets, OnVolumeChangedListener listener) {
+    public StartWorkoutSetAdapter(List<WorkoutSet> sets, String exerciseType, OnVolumeChangedListener volumeListener, StartWorkoutExerciseAdapter.OnWorkoutCompleteListener completeListener) {
         this.sets = sets;
-        this.volumeChangedListener = listener;
+        this.exerciseType = exerciseType;
+        this.volumeChangedListener = volumeListener;
+        this.workoutCompleteListener = completeListener;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if ("CARDIO".equals(exerciseType)) {
+            return VIEW_TYPE_CARDIO;
+        }
+        return VIEW_TYPE_WEIGHT;
     }
 
     @NonNull
     @Override
-    public SetViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (viewType == VIEW_TYPE_CARDIO) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.start_workout_cardio_set_item, parent, false);
+            return new CardioSetViewHolder(view);
+        }
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.start_workout_set_item, parent, false);
-        return new SetViewHolder(view);
+        return new WeightSetViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SetViewHolder holder, int position) {
-        holder.bind(sets.get(position));
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        if (holder.getItemViewType() == VIEW_TYPE_CARDIO) {
+            ((CardioSetViewHolder) holder).bind(sets.get(position));
+        } else {
+            ((WeightSetViewHolder) holder).bind(sets.get(position));
+        }
     }
 
     @Override
@@ -46,7 +69,13 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<StartWorkoutSet
         return sets.size();
     }
 
-    class SetViewHolder extends RecyclerView.ViewHolder {
+    private void triggerWorkoutComplete() {
+        if (workoutCompleteListener != null) {
+            workoutCompleteListener.onWorkoutComplete();
+        }
+    }
+
+    class WeightSetViewHolder extends RecyclerView.ViewHolder {
         TextView setNumberTextView;
         EditText repsEditText, weightEditText;
         CheckBox setCompleteCheckbox;
@@ -55,7 +84,7 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<StartWorkoutSet
         private TextWatcher repsWatcher;
         private TextWatcher weightWatcher;
 
-        public SetViewHolder(@NonNull View itemView) {
+        public WeightSetViewHolder(@NonNull View itemView) {
             super(itemView);
             setNumberTextView = itemView.findViewById(R.id.set_number_text_view);
             repsEditText = itemView.findViewById(R.id.reps_edit_text);
@@ -67,7 +96,6 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<StartWorkoutSet
         public void bind(final WorkoutSet set) {
             setNumberTextView.setText("Set " + (getAdapterPosition() + 1));
 
-            // Remove listeners before setting text to avoid triggering them
             if (repsWatcher != null) repsEditText.removeTextChangedListener(repsWatcher);
             if (weightWatcher != null) weightEditText.removeTextChangedListener(weightWatcher);
 
@@ -84,6 +112,7 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<StartWorkoutSet
                 if (volumeChangedListener != null) {
                     volumeChangedListener.onVolumeChanged();
                 }
+                triggerWorkoutComplete();
             });
 
             deleteSetButton.setOnClickListener(v -> {
@@ -110,7 +139,7 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<StartWorkoutSet
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                     set.plannedReps = s.toString();
                     if (!s.toString().isEmpty() && !setCompleteCheckbox.isChecked()) {
-                        setCompleteCheckbox.setChecked(true); // This triggers the OnCheckedChangeListener
+                        setCompleteCheckbox.setChecked(true);
                     } else if (setCompleteCheckbox.isChecked()) {
                         if (volumeChangedListener != null) volumeChangedListener.onVolumeChanged();
                     }
@@ -137,6 +166,98 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<StartWorkoutSet
 
             repsEditText.addTextChangedListener(repsWatcher);
             weightEditText.addTextChangedListener(weightWatcher);
+        }
+    }
+
+    class CardioSetViewHolder extends RecyclerView.ViewHolder {
+        TextView setNumberTextView;
+        EditText durationEditText, distanceEditText;
+        CheckBox setCompleteCheckbox;
+        ImageButton deleteSetButton;
+
+        private TextWatcher durationWatcher;
+        private TextWatcher distanceWatcher;
+
+        public CardioSetViewHolder(@NonNull View itemView) {
+            super(itemView);
+            setNumberTextView = itemView.findViewById(R.id.set_number_text_view);
+            durationEditText = itemView.findViewById(R.id.duration_edit_text);
+            distanceEditText = itemView.findViewById(R.id.distance_edit_text);
+            setCompleteCheckbox = itemView.findViewById(R.id.set_complete_checkbox);
+            deleteSetButton = itemView.findViewById(R.id.delete_set_button);
+        }
+
+        public void bind(final WorkoutSet set) {
+            setNumberTextView.setText("Set " + (getAdapterPosition() + 1));
+
+            if (durationWatcher != null) durationEditText.removeTextChangedListener(durationWatcher);
+            if (distanceWatcher != null) distanceEditText.removeTextChangedListener(distanceWatcher);
+
+            if (set.duration > 0) {
+                durationEditText.setText(String.valueOf(set.duration));
+            } else {
+                durationEditText.setText("");
+            }
+            if (set.distance > 0) {
+                distanceEditText.setText(String.valueOf(set.distance));
+            } else {
+                distanceEditText.setText("");
+            }
+            setCompleteCheckbox.setChecked(set.isCompleted);
+
+            setCompleteCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                set.isCompleted = isChecked;
+                triggerWorkoutComplete();
+            });
+
+            deleteSetButton.setOnClickListener(v -> {
+                 new AlertDialog.Builder(itemView.getContext())
+                        .setTitle("Delete Set")
+                        .setMessage("Are you sure you want to delete this set?")
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            int position = getAdapterPosition();
+                            if (position != RecyclerView.NO_POSITION) {
+                                sets.remove(position);
+                                notifyItemRemoved(position);
+                                notifyItemRangeChanged(position, sets.size());
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            });
+
+            durationWatcher = new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    try {
+                        set.duration = Float.parseFloat(s.toString());
+                    } catch (NumberFormatException e) {
+                        set.duration = 0;
+                    }
+                     if (!s.toString().isEmpty() && !setCompleteCheckbox.isChecked()) {
+                        setCompleteCheckbox.setChecked(true);
+                    }
+                }
+                @Override public void afterTextChanged(Editable s) {}
+            };
+
+            distanceWatcher = new TextWatcher() {
+                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    try {
+                        set.distance = Float.parseFloat(s.toString());
+                    } catch (NumberFormatException e) {
+                        set.distance = 0;
+                    }
+                     if (!s.toString().isEmpty() && !setCompleteCheckbox.isChecked()) {
+                        setCompleteCheckbox.setChecked(true);
+                    }
+                }
+                @Override public void afterTextChanged(Editable s) {}
+            };
+
+            durationEditText.addTextChangedListener(durationWatcher);
+            distanceEditText.addTextChangedListener(distanceWatcher);
         }
     }
 }

@@ -13,4 +13,7 @@ public interface SetDao {
 
     @Query("SELECT * FROM sets WHERE workoutLogId = :workoutLogId ORDER BY setNumber ASC")
     List<Set> getSetsForWorkoutLog(long workoutLogId);
+
+    @Query("SELECT * FROM sets")
+    List<Set> getAllSets();
 }

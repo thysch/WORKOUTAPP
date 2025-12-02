@@ -99,7 +99,7 @@ public class AddedExercisesAdapter extends RecyclerView.Adapter<AddedExercisesAd
             }
 
             List<WorkoutSet> sets = setsByExercise.get(exerciseId);
-            setAdapter = new SetAdapter(sets, dataChangedListener);
+            setAdapter = new SetAdapter(sets, exercise, dataChangedListener);
             setsRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
             setsRecyclerView.setAdapter(setAdapter);
 

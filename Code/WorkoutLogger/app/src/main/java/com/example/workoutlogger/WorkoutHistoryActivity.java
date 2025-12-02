@@ -7,6 +7,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.workoutlogger.data.AppDatabase;
+import com.example.workoutlogger.data.Exercise;
+import com.example.workoutlogger.data.Set;
 import com.example.workoutlogger.data.WorkoutLog;
 
 import java.util.List;
@@ -40,8 +42,11 @@ public class WorkoutHistoryActivity extends AppCompatActivity {
     private void loadWorkoutHistory() {
         AppDatabase.databaseWriteExecutor.execute(() -> {
             List<WorkoutLog> workoutLogs = db.workoutLogDao().getAllWorkoutLogs();
+            List<Set> allSets = db.setDao().getAllSets(); // Assuming you add this DAO method
+            List<Exercise> allExercises = db.exerciseDao().getAllExercises();
+
             runOnUiThread(() -> {
-                adapter = new WorkoutHistoryAdapter(workoutLogs);
+                adapter = new WorkoutHistoryAdapter(workoutLogs, allSets, allExercises);
                 workoutHistoryRecyclerView.setAdapter(adapter);
             });
         });
