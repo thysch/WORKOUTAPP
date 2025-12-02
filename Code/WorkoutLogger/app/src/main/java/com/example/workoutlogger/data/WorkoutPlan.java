@@ -9,7 +9,6 @@ public class WorkoutPlan {
     public long uid;
 
     public String name;
-
-    // Comma-separated list of exercise IDs
     public String exerciseIds;
+    public int displayOrder;
 }

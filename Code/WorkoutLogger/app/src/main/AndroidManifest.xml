@@ -21,6 +21,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".StartWorkoutActivity"
+            android:exported="false" />
         <activity android:name=".AddWorkoutActivity" />
         <activity android:name=".SelectExerciseActivity" />
         <activity android:name=".ProfileActivity" />

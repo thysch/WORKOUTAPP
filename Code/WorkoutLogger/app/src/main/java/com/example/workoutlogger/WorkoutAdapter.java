@@ -29,11 +29,13 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
     private List<Exercise> allExercises;
     private Context context;
 
+    // Constructor
     public WorkoutAdapter(List<WorkoutPlan> workoutPlans, List<Exercise> allExercises) {
         this.workoutPlans = workoutPlans;
         this.allExercises = allExercises;
     }
 
+    // Inflates the layout for the workout item
     @NonNull
     @Override
     public WorkoutViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -42,6 +44,7 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
         return new WorkoutViewHolder(view);
     }
 
+    // Sets the data for the workout item
     @Override
     public void onBindViewHolder(@NonNull WorkoutViewHolder holder, int position) {
         WorkoutPlan workoutPlan = workoutPlans.get(position);
@@ -65,16 +68,28 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
             holder.exerciseList.setText("");
         }
 
+
+        // Starts the workout
+        holder.startWorkout.setOnClickListener(v -> {
+            Intent intent = new Intent(context, StartWorkoutActivity.class);
+            intent.putExtra("WORKOUT_PLAN_ID", workoutPlan.uid);
+            context.startActivity(intent);
+        });
+
+        // Opens the little window for "Edit"/"Delete"
         holder.optionsButton.setOnClickListener(v -> {
             PopupMenu popup = new PopupMenu(v.getContext(), v);
             popup.getMenuInflater().inflate(R.menu.workout_options_menu, popup.getMenu());
 
+            // Sets the click listener for the menu items
             popup.setOnMenuItemClickListener(item -> {
                 int itemId = item.getItemId();
                 if (itemId == R.id.delete_workout) {
+                    // Deletes the workout
                     deleteWorkout(workoutPlan, holder.getAdapterPosition());
                     return true;
                 } else if (itemId == R.id.edit_workout) {
+                    // Opens the edit workout activity
                     editWorkout(workoutPlan);
                     return true;
                 }
@@ -84,11 +99,13 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
         });
     }
 
+
     private void editWorkout(WorkoutPlan workoutPlan) {
         Intent intent = new Intent(context, AddWorkoutActivity.class);
         intent.putExtra("WORKOUT_PLAN_ID", workoutPlan.uid);
         context.startActivity(intent);
     }
+
 
     private void deleteWorkout(WorkoutPlan workoutPlan, int position) {
         AppDatabase db = AppDatabase.getDatabase(context.getApplicationContext());
@@ -108,6 +125,7 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
         return workoutPlans.size();
     }
 
+
     private Exercise findExerciseById(long id) {
         for (Exercise exercise : allExercises) {
             if (exercise.uid == id) {
@@ -117,6 +135,7 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
         return null;
     }
 
+    // Updates the data for the adapter
     public void updateData(List<WorkoutPlan> newWorkoutPlans, List<Exercise> newAllExercises) {
         this.workoutPlans = newWorkoutPlans;
         this.allExercises = newAllExercises;
@@ -124,6 +143,7 @@ public class WorkoutAdapter extends RecyclerView.Adapter<WorkoutAdapter.WorkoutV
     }
 
 
+    // ViewHolder for the workout item
     static class WorkoutViewHolder extends RecyclerView.ViewHolder {
         TextView workoutName;
         TextView exerciseList;

@@ -2,25 +2,32 @@ package com.example.workoutlogger;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.workoutlogger.data.AppDatabase;
 import com.example.workoutlogger.data.Exercise;
 import com.example.workoutlogger.data.WorkoutPlan;
 import com.example.workoutlogger.data.WorkoutSet;
-import com.example.workoutlogger.data.WorkoutPlanDao;
-import com.example.workoutlogger.data.WorkoutSetDao;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,6 +41,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
     private AppDatabase db;
     private EditText workoutNameEditText;
     private long existingWorkoutPlanId = -1;
+    private boolean isWorkoutEdited = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,10 +56,42 @@ public class AddWorkoutActivity extends AppCompatActivity {
 
         workoutNameEditText = findViewById(R.id.workout_name_edit_text);
 
+        // Listen for changes in the workout name
+        workoutNameEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                isWorkoutEdited = true; // Mark as edited
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { }
+        });
+
         addedExercisesList = findViewById(R.id.added_exercises_list);
         addedExercisesList.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new AddedExercisesAdapter(addedExercises);
+        adapter = new AddedExercisesAdapter(addedExercises, () -> isWorkoutEdited = true); // Pass a lambda as the listener
         addedExercisesList.setAdapter(adapter);
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                int fromPosition = viewHolder.getAdapterPosition();
+                int toPosition = target.getAdapterPosition();
+                Collections.swap(addedExercises, fromPosition, toPosition);
+                adapter.notifyItemMoved(fromPosition, toPosition);
+                isWorkoutEdited = true;
+                return true;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                // Swiping is not enabled
+            }
+        });
+        itemTouchHelper.attachToRecyclerView(addedExercisesList);
 
         Button addExerciseButton = findViewById(R.id.add_exercise_button);
         addExerciseButton.setOnClickListener(v -> {
@@ -72,31 +112,36 @@ public class AddWorkoutActivity extends AppCompatActivity {
         AppDatabase.databaseWriteExecutor.execute(() -> {
             WorkoutPlan workoutPlan = db.workoutPlanDao().getWorkoutPlanById(existingWorkoutPlanId);
             if (workoutPlan != null) {
-                List<WorkoutSet> sets = db.workoutSetDao().getSetsForWorkoutPlan(existingWorkoutPlanId);
-                List<Long> exerciseIds = Arrays.stream(workoutPlan.exerciseIds.split(","))
-                                               .map(String::trim)
-                                               .map(Long::parseLong)
-                                               .collect(Collectors.toList());
-
                 List<Exercise> exercises = new ArrayList<>();
-                for (Long id : exerciseIds) {
-                    Exercise exercise = db.exerciseDao().getExerciseById(id);
-                    if (exercise != null) {
-                        exercises.add(exercise);
+                if (workoutPlan.exerciseIds != null && !workoutPlan.exerciseIds.isEmpty()) {
+                    List<Long> exerciseIds = Arrays.stream(workoutPlan.exerciseIds.split(","))
+                                                   .map(String::trim)
+                                                   .map(Long::parseLong)
+                                                   .collect(Collectors.toList());
+
+                    for (Long id : exerciseIds) {
+                        Exercise exercise = db.exerciseDao().getExerciseById(id);
+                        if (exercise != null) {
+                            exercises.add(exercise);
+                        }
                     }
                 }
 
+                List<WorkoutSet> sets = db.workoutSetDao().getSetsForWorkoutPlan(existingWorkoutPlanId);
+
                 runOnUiThread(() -> {
                     workoutNameEditText.setText(workoutPlan.name);
-                    addedExercises.addAll(exercises);
-                    adapter.notifyDataSetChanged();
-                    // This is a simplified way to re-populate sets; a more robust
-                    // solution would involve a more direct way of associating sets to exercises
-                    // in the adapter after they have been loaded.
+                    adapter.updateExercises(exercises);
+                    adapter.populateSets(sets);
+                    // Post a runnable to the view's message queue to run after the layout pass
+                    addedExercisesList.post(() -> {
+                        isWorkoutEdited = false;
+                    });
                 });
             }
         });
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -110,6 +155,7 @@ public class AddWorkoutActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
                             addedExercises.add(exercise);
                             adapter.notifyDataSetChanged();
+                            isWorkoutEdited = true;
                         });
                     }
                 });
@@ -143,11 +189,6 @@ public class AddWorkoutActivity extends AppCompatActivity {
             return;
         }
 
-        if (addedExercises.isEmpty()) {
-            Toast.makeText(this, "Please add at least one exercise.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         String exerciseIds = addedExercises.stream().map(exercise -> String.valueOf(exercise.uid)).collect(Collectors.joining(","));
 
         WorkoutPlan workoutPlan = new WorkoutPlan();
@@ -165,8 +206,6 @@ public class AddWorkoutActivity extends AppCompatActivity {
                 saveSets(planId, setsByExercise);
             } else {
                 db.workoutPlanDao().update(workoutPlan);
-                // For simplicity, we delete and re-insert sets. A more advanced implementation
-                // would perform a more granular update.
                 db.workoutSetDao().deleteSetsForWorkoutPlan(existingWorkoutPlanId);
                 saveSets(existingWorkoutPlanId, setsByExercise);
             }
@@ -188,6 +227,22 @@ public class AddWorkoutActivity extends AppCompatActivity {
         }
         if (!allSets.isEmpty()) {
             db.workoutSetDao().insertAll(allSets.toArray(new WorkoutSet[0]));
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (isWorkoutEdited) {
+            // If changes were made, show the confirmation dialog
+            new AlertDialog.Builder(this)
+                    .setTitle("Save this workout?")
+                    .setPositiveButton("Save", (dialog, which) -> saveWorkout())
+                    .setNegativeButton("Discard Changes", (dialog, which) -> finish())
+                    .setNeutralButton("Cancel", null)
+                    .show();
+        } else {
+            // If no changes were made, just finish the activity
+            super.onBackPressed();
         }
     }
 

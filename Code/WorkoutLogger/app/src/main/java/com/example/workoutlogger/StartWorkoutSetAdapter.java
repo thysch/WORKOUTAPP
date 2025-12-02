@@ -5,28 +5,32 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.workoutlogger.data.WorkoutSet;
 import java.util.List;
 
-public class SetAdapter extends RecyclerView.Adapter<SetAdapter.SetViewHolder> {
+public class StartWorkoutSetAdapter extends RecyclerView.Adapter<StartWorkoutSetAdapter.SetViewHolder> {
+
+    public interface OnVolumeChangedListener {
+        void onVolumeChanged();
+    }
 
     private List<WorkoutSet> sets;
-    private final AddedExercisesAdapter.OnDataChangedListener dataChangedListener;
+    private OnVolumeChangedListener volumeChangedListener;
 
-    public SetAdapter(List<WorkoutSet> sets, AddedExercisesAdapter.OnDataChangedListener listener) {
+    public StartWorkoutSetAdapter(List<WorkoutSet> sets, OnVolumeChangedListener listener) {
         this.sets = sets;
-        this.dataChangedListener = listener;
+        this.volumeChangedListener = listener;
     }
 
     @NonNull
     @Override
     public SetViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.set_item, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.start_workout_set_item, parent, false);
         return new SetViewHolder(view);
     }
 
@@ -40,29 +44,23 @@ public class SetAdapter extends RecyclerView.Adapter<SetAdapter.SetViewHolder> {
         return sets.size();
     }
 
-    private void notifyDataChanged() {
-        if (dataChangedListener != null) {
-            dataChangedListener.onDataChanged();
-        }
-    }
-
     class SetViewHolder extends RecyclerView.ViewHolder {
         TextView setNumberTextView;
         EditText repsEditText, weightEditText;
-        ImageButton deleteSetButton;
+        CheckBox setCompleteCheckbox;
 
         public SetViewHolder(@NonNull View itemView) {
             super(itemView);
             setNumberTextView = itemView.findViewById(R.id.set_number_text_view);
             repsEditText = itemView.findViewById(R.id.reps_edit_text);
             weightEditText = itemView.findViewById(R.id.weight_edit_text);
-            deleteSetButton = itemView.findViewById(R.id.delete_set_button);
+            setCompleteCheckbox = itemView.findViewById(R.id.set_complete_checkbox);
         }
 
         public void bind(final WorkoutSet set, final int position) {
             setNumberTextView.setText("Set " + (position + 1));
-            repsEditText.setText(set.plannedReps);
 
+            repsEditText.setText(set.plannedReps);
             if (set.weight > 0) {
                 weightEditText.setText(String.valueOf(set.weight));
             } else {
@@ -73,7 +71,9 @@ public class SetAdapter extends RecyclerView.Adapter<SetAdapter.SetViewHolder> {
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                     set.plannedReps = s.toString();
-                    notifyDataChanged();
+                    if (volumeChangedListener != null) {
+                        volumeChangedListener.onVolumeChanged();
+                    }
                 }
                 @Override public void afterTextChanged(Editable s) {}
             });
@@ -86,19 +86,11 @@ public class SetAdapter extends RecyclerView.Adapter<SetAdapter.SetViewHolder> {
                     } catch (NumberFormatException e) {
                         set.weight = 0;
                     }
-                    notifyDataChanged();
+                    if (volumeChangedListener != null) {
+                        volumeChangedListener.onVolumeChanged();
+                    }
                 }
                 @Override public void afterTextChanged(Editable s) {}
-            });
-
-            deleteSetButton.setOnClickListener(v -> {
-                int currentPosition = getAdapterPosition();
-                if (currentPosition != RecyclerView.NO_POSITION) {
-                    sets.remove(currentPosition);
-                    notifyItemRemoved(currentPosition);
-                    notifyItemRangeChanged(currentPosition, sets.size());
-                    notifyDataChanged();
-                }
             });
         }
     }
