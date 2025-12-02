@@ -56,4 +56,6 @@ dependencies {
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     annotationProcessor("androidx.room:room-compiler:$roomVersion")
+
+    implementation("nl.dionsegijn:konfetti-xml:2.0.4")
 }

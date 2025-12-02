@@ -20,10 +20,16 @@ public class WorkoutDetailExerciseAdapter extends RecyclerView.Adapter<WorkoutDe
 
     private final List<Exercise> exercises;
     private final Map<Long, List<Set>> setsByExerciseId;
+    private final boolean isExpandedByDefault;
 
     public WorkoutDetailExerciseAdapter(List<Exercise> exercises, Map<Long, List<Set>> setsByExerciseId) {
+        this(exercises, setsByExerciseId, false);
+    }
+
+    public WorkoutDetailExerciseAdapter(List<Exercise> exercises, Map<Long, List<Set>> setsByExerciseId, boolean isExpandedByDefault) {
         this.exercises = exercises;
         this.setsByExerciseId = setsByExerciseId;
+        this.isExpandedByDefault = isExpandedByDefault;
     }
 
     @NonNull
@@ -62,9 +68,17 @@ public class WorkoutDetailExerciseAdapter extends RecyclerView.Adapter<WorkoutDe
 
             List<Set> sets = setsByExerciseId.get(exercise.uid);
             if (sets != null && !sets.isEmpty()) {
-                WorkoutDetailSetAdapter setAdapter = new WorkoutDetailSetAdapter(sets);
+                WorkoutDetailSetAdapter setAdapter = new WorkoutDetailSetAdapter(sets, exercise);
                 setsRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
                 setsRecyclerView.setAdapter(setAdapter);
+            }
+
+            if (isExpandedByDefault) {
+                setsRecyclerView.setVisibility(View.VISIBLE);
+                expandCollapseIndicator.setImageResource(R.drawable.ic_arrow_down);
+            } else {
+                setsRecyclerView.setVisibility(View.GONE);
+                expandCollapseIndicator.setImageResource(R.drawable.ic_arrow_right);
             }
 
             View.OnClickListener expandCollapseListener = v -> {

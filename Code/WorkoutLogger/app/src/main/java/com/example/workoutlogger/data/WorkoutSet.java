@@ -27,6 +27,10 @@ public class WorkoutSet {
     public String plannedReps;
     public float weight;
 
+    // For Cardio
+    public float duration; // in minutes
+    public float distance; // in miles
+
     @Ignore
     public boolean isCompleted;
 }

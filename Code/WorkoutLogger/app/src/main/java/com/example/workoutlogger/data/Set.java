@@ -25,4 +25,8 @@ public class Set {
     public int reps;
     public float weight;
     public int setNumber;
+
+    // For Cardio
+    public float duration; // in minutes
+    public float distance; // in miles
 }

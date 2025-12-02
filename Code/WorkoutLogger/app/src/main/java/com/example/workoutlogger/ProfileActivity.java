@@ -7,12 +7,18 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import com.example.workoutlogger.data.AppDatabase;
+
 public class ProfileActivity extends AppCompatActivity {
+
+    private AppDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
+
+        db = AppDatabase.getDatabase(getApplicationContext());
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -25,6 +31,18 @@ public class ProfileActivity extends AppCompatActivity {
         workoutHistoryButton.setOnClickListener(v -> {
             Intent intent = new Intent(ProfileActivity.this, WorkoutHistoryActivity.class);
             startActivity(intent);
+        });
+
+        updateWorkoutStats();
+    }
+
+    private void updateWorkoutStats() {
+        TextView statsTextView = findViewById(R.id.profile_stats);
+        AppDatabase.databaseWriteExecutor.execute(() -> {
+            int workoutCount = db.workoutLogDao().getWorkoutLogCount();
+            runOnUiThread(() -> {
+                statsTextView.setText(workoutCount + " Workouts Completed");
+            });
         });
     }
 
