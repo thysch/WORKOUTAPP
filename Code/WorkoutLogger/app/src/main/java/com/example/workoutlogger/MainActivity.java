@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.Button;
 import androidx.annotation.NonNull;
+import android.preference.PreferenceManager;
+import android.content.SharedPreferences;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,10 +26,16 @@ public class MainActivity extends AppCompatActivity {
     private AppDatabase db;
     private WorkoutAdapter adapter;
     private List<WorkoutPlan> workoutPlans;
+    private int mCurrentTheme;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        int colorRes = sharedPreferences.getInt("selected_theme_color", R.color.colorPrimary);
+        mCurrentTheme = getThemeResId(colorRes);
+        setTheme(mCurrentTheme);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -109,14 +117,16 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         // We call loadWorkouts here as well to refresh the data when the user
         // navigates back to this screen after adding/editing a workout.
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        int colorRes = sharedPreferences.getInt("selected_theme_color", R.color.colorPrimary);
+        if (mCurrentTheme != getThemeResId(colorRes)) {
+            recreate();
+            return;
+        }
         loadWorkouts();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        AppDatabase.shutdown();
-    }
+
 
     private void loadWorkouts() {
         AppDatabase.databaseWriteExecutor.execute(() -> {
@@ -292,4 +302,22 @@ public class MainActivity extends AppCompatActivity {
         WorkoutPlan plan3 = new WorkoutPlan(); plan3.name = "Leg Day"; plan3.exerciseIds = id7 + "," + id8 + "," + id9; plan3.displayOrder = 3; db.workoutPlanDao().insert(plan3);
         WorkoutPlan plan4 = new WorkoutPlan(); plan4.name = "Cardio Day"; plan4.exerciseIds = id10 + "," + id11 + "," + id12; plan4.displayOrder = 4; db.workoutPlanDao().insert(plan4);
     }
+
+
+    private int getThemeResId(int colorRes) {
+        if (colorRes == R.color.theme_red) return R.style.Theme_WorkoutLogger_Red;
+        if (colorRes == R.color.theme_pink) return R.style.Theme_WorkoutLogger_Pink;
+        if (colorRes == R.color.theme_purple) return R.style.Theme_WorkoutLogger_Purple;
+        if (colorRes == R.color.theme_deep_purple) return R.style.Theme_WorkoutLogger_DeepPurple;
+        if (colorRes == R.color.theme_indigo) return R.style.Theme_WorkoutLogger_Indigo;
+        if (colorRes == R.color.theme_blue) return R.style.Theme_WorkoutLogger_Blue;
+        if (colorRes == R.color.theme_teal) return R.style.Theme_WorkoutLogger_Teal;
+        if (colorRes == R.color.theme_green) return R.style.Theme_WorkoutLogger_Green;
+        if (colorRes == R.color.theme_orange) return R.style.Theme_WorkoutLogger_Orange;
+        if (colorRes == R.color.theme_brown) return R.style.Theme_WorkoutLogger_Brown;
+        return R.style.Theme_WorkoutLogger;
+    }
+
+
+
 }

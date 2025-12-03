@@ -1,11 +1,56 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.WorkoutLogger" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Default theme color -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
     </style>
 
     <style name="Theme.WorkoutLogger" parent="Base.Theme.WorkoutLogger" />
+
+    <!-- Color Themes -->
+    <style name="Theme.WorkoutLogger.Red" parent="Base.Theme.WorkoutLogger">
+        <item name="colorPrimary">@color/theme_red</item>
+        <item name="colorPrimaryDark">@color/theme_red_dark</item>
+    </style>
+    <style name="Theme.WorkoutLogger.Pink" parent="Base.Theme.WorkoutLogger">
+        <item name="colorPrimary">@color/theme_pink</item>
+        <item name="colorPrimaryDark">@color/theme_pink_dark</item>
+    </style>
+    <style name="Theme.WorkoutLogger.Purple" parent="Base.Theme.WorkoutLogger">
+        <item name="colorPrimary">@color/theme_purple</item>
+        <item name="colorPrimaryDark">@color/theme_purple_dark</item>
+    </style>
+    <style name="Theme.WorkoutLogger.DeepPurple" parent="Base.Theme.WorkoutLogger">
+        <item name="colorPrimary">@color/theme_deep_purple</item>
+        <item name="colorPrimaryDark">@color/theme_deep_purple_dark</item>
+    </style>
+    <style name="Theme.WorkoutLogger.Indigo" parent="Base.Theme.WorkoutLogger">
+        <item name="colorPrimary">@color/theme_indigo</item>
+        <item name="colorPrimaryDark">@color/theme_indigo_dark</item>
+    </style>
+    <style name="Theme.WorkoutLogger.Blue" parent="Base.Theme.WorkoutLogger">
+        <item name="colorPrimary">@color/theme_blue</item>
+        <item name="colorPrimaryDark">@color/theme_blue_dark</item>
+    </style>
+    <style name="Theme.WorkoutLogger.Teal" parent="Base.Theme.WorkoutLogger">
+        <item name="colorPrimary">@color/theme_teal</item>
+        <item name="colorPrimaryDark">@color/theme_teal_dark</item>
+    </style>
+    <style name="Theme.WorkoutLogger.Green" parent="Base.Theme.WorkoutLogger">
+        <item name="colorPrimary">@color/theme_green</item>
+        <item name="colorPrimaryDark">@color/theme_green_dark</item>
+    </style>
+    <style name="Theme.WorkoutLogger.Orange" parent="Base.Theme.WorkoutLogger">
+        <item name="colorPrimary">@color/theme_orange</item>
+        <item name="colorPrimaryDark">@color/theme_orange_dark</item>
+    </style>
+    <style name="Theme.WorkoutLogger.Brown" parent="Base.Theme.WorkoutLogger">
+        <item name="colorPrimary">@color/theme_brown</item>
+        <item name="colorPrimaryDark">@color/theme_brown_dark</item>
+    </style>
+
     <style name="TextAppearance.App.Medium.Bold" parent="TextAppearance.AppCompat.Medium">
         <item name="android:textStyle">bold</item>
     </style>
