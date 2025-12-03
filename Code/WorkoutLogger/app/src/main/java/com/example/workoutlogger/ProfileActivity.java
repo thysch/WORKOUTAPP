@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import com.bumptech.glide.Glide;
 import com.example.workoutlogger.data.AppDatabase;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -16,10 +17,11 @@ public class ProfileActivity extends AppCompatActivity {
     private AppDatabase db;
     private SharedPreferences sharedPreferences;
     private int mCurrentTheme;
+    private ImageView profileImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         int colorRes = sharedPreferences.getInt("selected_theme_color", R.color.colorPrimary);
         mCurrentTheme = getThemeResId(colorRes);
         setTheme(mCurrentTheme);
@@ -28,7 +30,6 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         db = AppDatabase.getDatabase(getApplicationContext());
-        this.sharedPreferences = sharedPreferences;
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -36,6 +37,8 @@ public class ProfileActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("Profile");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+        profileImageView = findViewById(R.id.profile_avatar);
 
         TextView workoutHistoryButton = findViewById(R.id.button_workout_history);
         workoutHistoryButton.setOnClickListener(v -> {
@@ -68,6 +71,7 @@ public class ProfileActivity extends AppCompatActivity {
             recreate();
             return;
         }
+        // Reload profile to reflect changes from SettingsActivity
         loadProfile();
     }
 
@@ -79,8 +83,15 @@ public class ProfileActivity extends AppCompatActivity {
         nameTextView.setText(name);
 
         if (imageUriString != null) {
-            ImageView profileImageView = findViewById(R.id.profile_avatar);
-            profileImageView.setImageURI(Uri.parse(imageUriString));
+            Uri imageUri = Uri.parse(imageUriString);
+            Glide.with(this)
+                .load(imageUri)
+                .circleCrop()
+                .placeholder(R.drawable.ic_default_profile)
+                .error(R.drawable.ic_default_profile) // In case of error (e.g., file deleted)
+                .into(profileImageView);
+        } else {
+            profileImageView.setImageResource(R.drawable.ic_default_profile);
         }
     }
 

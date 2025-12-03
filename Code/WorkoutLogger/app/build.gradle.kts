@@ -58,4 +58,6 @@ dependencies {
     annotationProcessor("androidx.room:room-compiler:$roomVersion")
 
     implementation("nl.dionsegijn:konfetti-xml:2.0.4")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
 }

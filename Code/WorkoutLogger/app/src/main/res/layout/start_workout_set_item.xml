@@ -1,19 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="8dp">
 
     <ImageButton
         android:id="@+id/delete_set_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
         android:background="?android:attr/selectableItemBackground"
         android:src="@drawable/ic_delete"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.512" />
 
     <TextView
         android:id="@+id/set_number_text_view"
@@ -23,23 +25,24 @@
         android:text="Set 1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/delete_set_button"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.538" />
 
     <TextView
         android:id="@+id/reps_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:text="Reps"
         app:layout_constraintBaseline_toBaselineOf="@+id/reps_edit_text"
         app:layout_constraintEnd_toStartOf="@+id/reps_edit_text"
-        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toEndOf="@+id/set_number_text_view" />
 
     <EditText
         android:id="@+id/reps_edit_text"
         android:layout_width="70dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="0dp"
         android:gravity="center"
         android:hint="8-12"
         android:inputType="number"
@@ -51,8 +54,8 @@
         android:id="@+id/weight_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="Weight"
+        android:layout_marginStart="12dp"
+        android:text="Wt"
         app:layout_constraintBaseline_toBaselineOf="@+id/weight_edit_text"
         app:layout_constraintEnd_toStartOf="@+id/weight_edit_text"
         app:layout_constraintStart_toEndOf="@+id/reps_edit_text" />
@@ -61,7 +64,7 @@
         android:id="@+id/weight_edit_text"
         android:layout_width="70dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="0dp"
         android:gravity="center"
         android:hint="0.0"
         android:inputType="numberDecimal"
@@ -71,10 +74,12 @@
 
     <CheckBox
         android:id="@+id/set_complete_checkbox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginEnd="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.48" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
