@@ -28,6 +28,7 @@ import com.example.workoutlogger.data.WorkoutLog;
 import com.example.workoutlogger.data.WorkoutPlan;
 import com.example.workoutlogger.data.Set;
 import com.example.workoutlogger.data.WorkoutSet;
+import com.example.workoutlogger.utils.WeightCalculator;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -97,6 +98,24 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
         totalVolumeTextView = findViewById(R.id.total_volume_text_view);
         exercisesRecyclerView = findViewById(R.id.exercises_recycler_view);
         exercisesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        // Plate Calculator UI
+        EditText weightInputEditText = findViewById(R.id.weight_input_edit_text);
+        Button calculateButton = findViewById(R.id.calculate_button);
+        TextView plateResultTextView = findViewById(R.id.plate_result_text_view);
+
+        calculateButton.setOnClickListener(v -> {
+            String weightStr = weightInputEditText.getText().toString();
+            if (!weightStr.isEmpty()) {
+                try {
+                    double totalWeight = Double.parseDouble(weightStr);
+                    String result = WeightCalculator.calculatePlates(totalWeight);
+                    plateResultTextView.setText(result);
+                } catch (NumberFormatException e) {
+                    plateResultTextView.setText("Invalid weight");
+                }
+            }
+        });
 
         Button startRestButton = findViewById(R.id.start_stop_timer_button);
         Button resetRestButton = findViewById(R.id.reset_timer_button);
