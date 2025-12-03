@@ -7,6 +7,7 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -34,6 +35,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -42,6 +44,7 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
     private AppDatabase db;
     private long workoutPlanId;
     private Chronometer uptimeChronometer;
+    private Chronometer restTimerChronometer;
     private TextView totalVolumeTextView;
     private RecyclerView exercisesRecyclerView;
     private StartWorkoutExerciseAdapter adapter;
@@ -90,9 +93,23 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
 
         workoutNameEditText = findViewById(R.id.workout_name_edit_text);
         uptimeChronometer = findViewById(R.id.uptime_chronometer);
+        restTimerChronometer = findViewById(R.id.rest_timer);
         totalVolumeTextView = findViewById(R.id.total_volume_text_view);
         exercisesRecyclerView = findViewById(R.id.exercises_recycler_view);
         exercisesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        Button startRestButton = findViewById(R.id.start_stop_timer_button);
+        Button resetRestButton = findViewById(R.id.reset_timer_button);
+
+        startRestButton.setOnClickListener(v -> {
+            restTimerChronometer.setBase(SystemClock.elapsedRealtime());
+            restTimerChronometer.start();
+        });
+
+        resetRestButton.setOnClickListener(v -> {
+            restTimerChronometer.stop();
+            restTimerChronometer.setBase(SystemClock.elapsedRealtime());
+        });
 
         FloatingActionButton addExerciseFab = findViewById(R.id.add_exercise_fab);
         addExerciseFab.setOnClickListener(v -> {
@@ -135,6 +152,9 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
             // This is a planned workout
             loadWorkoutData();
         }
+
+        // Set initial volume text
+        calculateTotalVolume();
     }
 
     private void loadWorkoutData() {
@@ -249,7 +269,9 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
                 }
             }
         }
-        totalVolumeTextView.setText("Total Volume: " + totalVolume + " lbs");
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String weightUnit = sharedPreferences.getString("weight_unit", "lbs");
+        totalVolumeTextView.setText(String.format(Locale.getDefault(), "Total Volume: %.1f %s", totalVolume, weightUnit));
     }
 
     private long saveWorkout(String workoutName) {
