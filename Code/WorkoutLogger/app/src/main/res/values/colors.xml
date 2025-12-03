@@ -27,4 +27,6 @@
     <color name="theme_orange_dark">#F57C00</color>
     <color name="theme_brown">#795548</color>
     <color name="theme_brown_dark">#5D4037</color>
+
+    <color name="item_background">#FFFFFF</color>
 </resources>

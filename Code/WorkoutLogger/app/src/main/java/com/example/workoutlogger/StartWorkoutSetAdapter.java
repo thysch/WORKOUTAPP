@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.workoutlogger.data.WorkoutSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -104,7 +105,11 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.Vi
 
             repsEditText.setText(set.plannedReps);
             if (set.weight > 0) {
-                weightEditText.setText(String.valueOf(set.weight));
+                if (set.weight == (long) set.weight) {
+                    weightEditText.setText(String.format(Locale.getDefault(), "%d", (long) set.weight));
+                } else {
+                    weightEditText.setText(String.valueOf(set.weight));
+                }
             } else {
                 weightEditText.setText("");
             }
@@ -215,12 +220,20 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             if (distanceWatcher != null) distanceEditText.removeTextChangedListener(distanceWatcher);
 
             if (set.duration > 0) {
-                durationEditText.setText(String.valueOf(set.duration));
+                if (set.duration == (long) set.duration) {
+                    durationEditText.setText(String.format(Locale.getDefault(), "%d", (long) set.duration));
+                } else {
+                    durationEditText.setText(String.valueOf(set.duration));
+                }
             } else {
                 durationEditText.setText("");
             }
             if (set.distance > 0) {
-                distanceEditText.setText(String.valueOf(set.distance));
+                if (set.distance == (long) set.distance) {
+                    distanceEditText.setText(String.format(Locale.getDefault(), "%d", (long) set.distance));
+                } else {
+                    distanceEditText.setText(String.valueOf(set.distance));
+                }
             } else {
                 distanceEditText.setText("");
             }
