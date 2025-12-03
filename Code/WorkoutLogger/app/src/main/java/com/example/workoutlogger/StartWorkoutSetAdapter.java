@@ -10,6 +10,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.workoutlogger.data.WorkoutSet;
@@ -116,6 +117,28 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             setCompleteCheckbox.setChecked(set.isCompleted);
 
             setCompleteCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) {
+                    String repsStr = repsEditText.getText().toString();
+                    String weightStr = weightEditText.getText().toString();
+                    if (repsStr.isEmpty() || weightStr.isEmpty()) {
+                        Toast.makeText(itemView.getContext(), "Please enter reps and weight.", Toast.LENGTH_SHORT).show();
+                        buttonView.setChecked(false);
+                        return;
+                    }
+                    try {
+                        int reps = Integer.parseInt(repsStr);
+                        float weight = Float.parseFloat(weightStr);
+                        if (reps <= 0 || weight <= 0) {
+                            Toast.makeText(itemView.getContext(), "Please enter valid reps and weight.", Toast.LENGTH_SHORT).show();
+                            buttonView.setChecked(false);
+                            return;
+                        }
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(itemView.getContext(), "Please enter valid reps and weight.", Toast.LENGTH_SHORT).show();
+                        buttonView.setChecked(false);
+                        return;
+                    }
+                }
                 set.isCompleted = isChecked;
                 if (volumeChangedListener != null) {
                     volumeChangedListener.onVolumeChanged();
@@ -240,6 +263,36 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.Vi
             setCompleteCheckbox.setChecked(set.isCompleted);
 
             setCompleteCheckbox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if (isChecked) {
+                    String durationStr = durationEditText.getText().toString();
+                    String distanceStr = distanceEditText.getText().toString();
+                    boolean durationEntered = false;
+                    boolean distanceEntered = false;
+                    if (!durationStr.isEmpty()) {
+                        try {
+                            if (Float.parseFloat(durationStr) > 0) {
+                                durationEntered = true;
+                            }
+                        } catch (NumberFormatException e) {
+                            // ignore
+                        }
+                    }
+                    if (!distanceStr.isEmpty()) {
+                        try {
+                            if (Float.parseFloat(distanceStr) > 0) {
+                                distanceEntered = true;
+                            }
+                        } catch (NumberFormatException e) {
+                            // ignore
+                        }
+                    }
+
+                    if (!durationEntered && !distanceEntered) {
+                        Toast.makeText(itemView.getContext(), "Please enter duration or distance.", Toast.LENGTH_SHORT).show();
+                        buttonView.setChecked(false);
+                        return;
+                    }
+                }
                 set.isCompleted = isChecked;
                 triggerWorkoutComplete();
             });
