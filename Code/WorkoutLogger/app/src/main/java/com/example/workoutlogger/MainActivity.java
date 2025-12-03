@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
         Exercise ex1 = new Exercise(); ex1.name = "Bench Press"; ex1.type = "WEIGHT"; ex1.tags = "Chest,Triceps,Shoulders,Push"; long id1 = db.exerciseDao().insert(ex1);
         Exercise ex2 = new Exercise(); ex2.name = "Overhead Press"; ex2.type = "WEIGHT"; ex2.tags = "Shoulders,Triceps,Push"; long id2 = db.exerciseDao().insert(ex2);
         Exercise ex3 = new Exercise(); ex3.name = "Tricep Pushdown"; ex3.type = "WEIGHT"; ex3.tags = "Triceps,Push,Arms"; long id3 = db.exerciseDao().insert(ex3);
-        Exercise ex4 = new Exercise(); ex4.name = "Pull Ups"; ex4.type = "WEIGHT"; ex4.tags = "Back,Biceps,Pull"; long id4 = db.exerciseDao().insert(ex4);
+        Exercise ex4 = new Exercise(); ex4.name = "Pull Ups"; ex4.type = "WEIGHT"; ex4.tags = "Back,Biceps,Pull,Bodyweight"; long id4 = db.exerciseDao().insert(ex4);
         Exercise ex5 = new Exercise(); ex5.name = "Bent Over Rows"; ex5.type = "WEIGHT"; ex5.tags = "Back,Biceps,Pull"; long id5 = db.exerciseDao().insert(ex5);
         Exercise ex6 = new Exercise(); ex6.name = "Bicep Curls"; ex6.type = "WEIGHT"; ex6.tags = "Biceps,Arms,Pull"; long id6 = db.exerciseDao().insert(ex6);
         Exercise ex7 = new Exercise(); ex7.name = "Squats"; ex7.type = "WEIGHT"; ex7.tags = "Legs,Quads,Glutes,Bodyweight"; long id7 = db.exerciseDao().insert(ex7);
