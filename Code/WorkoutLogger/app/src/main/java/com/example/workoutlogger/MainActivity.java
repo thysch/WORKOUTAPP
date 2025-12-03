@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private List<WorkoutPlan> workoutPlans;
     private int mCurrentTheme;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
