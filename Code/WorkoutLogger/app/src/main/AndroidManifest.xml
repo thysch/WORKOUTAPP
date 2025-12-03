@@ -28,6 +28,8 @@
         <activity android:name=".SelectExerciseActivity" />
         <activity android:name=".ProfileActivity" />
         <activity android:name=".ShareWorkoutActivity" />
+        <activity android:name=".SettingsActivity" />
+        <activity android:name=".MyStatsActivity" />
 
         <activity
             android:name=".WorkoutHistoryActivity"

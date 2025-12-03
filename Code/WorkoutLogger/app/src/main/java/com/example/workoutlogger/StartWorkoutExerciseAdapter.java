@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class StartWorkoutExerciseAdapter extends RecyclerView.Adapter<StartWorkoutExerciseAdapter.ExerciseViewHolder> {
 
@@ -32,11 +33,13 @@ public class StartWorkoutExerciseAdapter extends RecyclerView.Adapter<StartWorko
     private Map<Long, List<WorkoutSet>> setsByExercise = new HashMap<>();
     private final StartWorkoutSetAdapter.OnVolumeChangedListener volumeChangedListener;
     private final OnWorkoutCompleteListener workoutCompleteListener;
+    private final Supplier<Integer> uncheckedSetsCountSupplier;
 
-    public StartWorkoutExerciseAdapter(List<Exercise> exercises, StartWorkoutSetAdapter.OnVolumeChangedListener volumeListener, OnWorkoutCompleteListener completeListener) {
+    public StartWorkoutExerciseAdapter(List<Exercise> exercises, StartWorkoutSetAdapter.OnVolumeChangedListener volumeListener, OnWorkoutCompleteListener completeListener, Supplier<Integer> uncheckedSetsCountSupplier) {
         this.exercises = exercises;
         this.volumeChangedListener = volumeListener;
         this.workoutCompleteListener = completeListener;
+        this.uncheckedSetsCountSupplier = uncheckedSetsCountSupplier;
     }
 
     public void populateSets(List<WorkoutSet> allSets) {
@@ -99,7 +102,7 @@ public class StartWorkoutExerciseAdapter extends RecyclerView.Adapter<StartWorko
             }
 
             List<WorkoutSet> sets = setsByExercise.get(exerciseId);
-            setAdapter = new StartWorkoutSetAdapter(sets, exercise.type, volumeChangedListener, workoutCompleteListener);
+            setAdapter = new StartWorkoutSetAdapter(sets, exercise.type, volumeChangedListener, workoutCompleteListener, uncheckedSetsCountSupplier);
             setsRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
             setsRecyclerView.setAdapter(setAdapter);
 

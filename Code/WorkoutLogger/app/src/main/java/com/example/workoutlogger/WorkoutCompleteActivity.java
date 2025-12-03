@@ -1,7 +1,11 @@
 package com.example.workoutlogger;
 
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -28,7 +32,6 @@ import nl.dionsegijn.konfetti.xml.KonfettiView;
 public class WorkoutCompleteActivity extends AppCompatActivity {
 
     public static final String EXTRA_WORKOUT_LOG_ID = "WORKOUT_LOG_ID";
-    public static final String EXTRA_USER_NAME = "USER_NAME";
 
     private AppDatabase db;
     private long workoutLogId;
@@ -40,10 +43,18 @@ public class WorkoutCompleteActivity extends AppCompatActivity {
 
         db = AppDatabase.getDatabase(getApplicationContext());
         workoutLogId = getIntent().getLongExtra(EXTRA_WORKOUT_LOG_ID, -1);
-        String userName = getIntent().getStringExtra(EXTRA_USER_NAME);
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String userName = sharedPreferences.getString("user_name", "Tim S");
+        String imageUriString = sharedPreferences.getString("profile_image_uri", null);
 
         TextView userNameTextView = findViewById(R.id.user_name_text_view);
         userNameTextView.setText("Great job, " + userName + "!");
+
+        if (imageUriString != null) {
+            ImageView profileImageView = findViewById(R.id.profile_image_view);
+            profileImageView.setImageURI(Uri.parse(imageUriString));
+        }
 
         Button doneButton = findViewById(R.id.done_button);
         doneButton.setOnClickListener(v -> finish());
@@ -78,6 +89,10 @@ public class WorkoutCompleteActivity extends AppCompatActivity {
             runOnUiThread(() -> {
                 if (workoutLog == null) return;
 
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                String weightUnit = sharedPreferences.getString("weight_unit", "lbs");
+                String distanceUnit = sharedPreferences.getString("distance_unit", "mi");
+
                 TextView dateTextView = findViewById(R.id.date_text_view);
                 TextView durationTextView = findViewById(R.id.duration_text_view);
                 TextView volumeTextView = findViewById(R.id.volume_text_view);
@@ -90,10 +105,14 @@ public class WorkoutCompleteActivity extends AppCompatActivity {
                 long seconds = TimeUnit.MILLISECONDS.toSeconds(workoutLog.duration) % 60;
                 durationTextView.setText(String.format(Locale.getDefault(), "Duration: %dm %ds", minutes, seconds));
 
-                volumeTextView.setText(String.format(Locale.getDefault(), "Total Volume: %.1f lbs", workoutLog.totalVolume));
+                float totalVolume = workoutLog.totalVolume;
+                if ("kg".equals(weightUnit)) {
+                    totalVolume *= 0.453592f;
+                }
+                volumeTextView.setText(String.format(Locale.getDefault(), "Total Volume: %.1f %s", totalVolume, weightUnit));
 
                 exercisesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-                WorkoutDetailExerciseAdapter adapter = new WorkoutDetailExerciseAdapter(exercises, setsByExerciseId, true);
+                WorkoutDetailExerciseAdapter adapter = new WorkoutDetailExerciseAdapter(exercises, setsByExerciseId, true, weightUnit, distanceUnit);
                 exercisesRecyclerView.setAdapter(adapter);
             });
         });

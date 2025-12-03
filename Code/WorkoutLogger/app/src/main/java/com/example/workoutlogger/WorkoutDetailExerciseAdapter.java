@@ -20,16 +20,16 @@ public class WorkoutDetailExerciseAdapter extends RecyclerView.Adapter<WorkoutDe
 
     private final List<Exercise> exercises;
     private final Map<Long, List<Set>> setsByExerciseId;
-    private final boolean isExpandedByDefault;
+    private final boolean isExpanded;
+    private final String weightUnit;
+    private final String distanceUnit;
 
-    public WorkoutDetailExerciseAdapter(List<Exercise> exercises, Map<Long, List<Set>> setsByExerciseId) {
-        this(exercises, setsByExerciseId, false);
-    }
-
-    public WorkoutDetailExerciseAdapter(List<Exercise> exercises, Map<Long, List<Set>> setsByExerciseId, boolean isExpandedByDefault) {
+    public WorkoutDetailExerciseAdapter(List<Exercise> exercises, Map<Long, List<Set>> setsByExerciseId, boolean isExpanded, String weightUnit, String distanceUnit) {
         this.exercises = exercises;
         this.setsByExerciseId = setsByExerciseId;
-        this.isExpandedByDefault = isExpandedByDefault;
+        this.isExpanded = isExpanded;
+        this.weightUnit = weightUnit;
+        this.distanceUnit = distanceUnit;
     }
 
     @NonNull
@@ -50,30 +50,28 @@ public class WorkoutDetailExerciseAdapter extends RecyclerView.Adapter<WorkoutDe
     }
 
     class ExerciseViewHolder extends RecyclerView.ViewHolder {
-        private final TextView exerciseNameTextView;
-        private final RecyclerView setsRecyclerView;
-        private final ImageView expandCollapseIndicator;
-        private final View exerciseHeader;
+        TextView exerciseNameTextView;
+        RecyclerView setsRecyclerView;
+        ImageView expandCollapseIndicator;
 
         public ExerciseViewHolder(@NonNull View itemView) {
             super(itemView);
             exerciseNameTextView = itemView.findViewById(R.id.exercise_name_text_view);
             setsRecyclerView = itemView.findViewById(R.id.sets_recycler_view);
             expandCollapseIndicator = itemView.findViewById(R.id.expand_collapse_indicator);
-            exerciseHeader = itemView.findViewById(R.id.exercise_header);
         }
 
-        public void bind(Exercise exercise) {
+        public void bind(final Exercise exercise) {
             exerciseNameTextView.setText(exercise.name);
 
             List<Set> sets = setsByExerciseId.get(exercise.uid);
-            if (sets != null && !sets.isEmpty()) {
-                WorkoutDetailSetAdapter setAdapter = new WorkoutDetailSetAdapter(sets, exercise);
+            if (sets != null) {
+                WorkoutDetailSetAdapter setAdapter = new WorkoutDetailSetAdapter(sets, exercise.type, weightUnit, distanceUnit);
                 setsRecyclerView.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
                 setsRecyclerView.setAdapter(setAdapter);
             }
 
-            if (isExpandedByDefault) {
+            if (isExpanded) {
                 setsRecyclerView.setVisibility(View.VISIBLE);
                 expandCollapseIndicator.setImageResource(R.drawable.ic_arrow_down);
             } else {
@@ -90,7 +88,9 @@ public class WorkoutDetailExerciseAdapter extends RecyclerView.Adapter<WorkoutDe
                     expandCollapseIndicator.setImageResource(R.drawable.ic_arrow_down);
                 }
             };
-            exerciseHeader.setOnClickListener(expandCollapseListener);
+
+            exerciseNameTextView.setOnClickListener(expandCollapseListener);
+            expandCollapseIndicator.setOnClickListener(expandCollapseListener);
         }
     }
 }

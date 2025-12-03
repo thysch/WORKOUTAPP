@@ -26,11 +26,12 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <!-- User Info Section -->
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/profile_avatar"
             android:layout_width="96dp"
             android:layout_height="96dp"
-            android:src="@drawable/ic_default_profile" />
+            android:src="@drawable/ic_default_profile"
+            app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent" />
 
         <TextView
             android:id="@+id/profile_name"
@@ -64,6 +65,18 @@
             android:textSize="18sp"
             android:padding="12dp"
             android:drawableStart="@drawable/ic_history"
+            android:drawablePadding="16dp"
+            android:background="?attr/selectableItemBackground"/>
+
+        <TextView
+            android:id="@+id/button_my_stats"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="My Stats"
+            android:textSize="18sp"
+            android:padding="12dp"
+            android:drawableStart="@drawable/ic_stats"
             android:drawablePadding="16dp"
             android:background="?attr/selectableItemBackground"/>
 
