@@ -11,7 +11,7 @@ public interface ExerciseDao {
     @Insert
     long insert(Exercise exercise);
 
-    @Query("SELECT * FROM exercises")
+    @Query("SELECT * FROM exercises ORDER BY name ASC")
     List<Exercise> getAllExercises();
 
     @Query("SELECT * FROM exercises WHERE uid = :exerciseId")

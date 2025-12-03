@@ -3,7 +3,10 @@ package com.example.workoutlogger;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.text.TextUtils;
+import android.view.View;
 import android.widget.Chronometer;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,21 +43,24 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
     private TextView totalVolumeTextView;
     private RecyclerView exercisesRecyclerView;
     private StartWorkoutExerciseAdapter adapter;
-    private List<Exercise> exercises;
+    private List<Exercise> exercises = new ArrayList<>();
     private float totalVolume = 0;
+    private EditText workoutNameEditText;
 
     private final ActivityResultLauncher<Intent> selectExercisesLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    ArrayList<Long> newExerciseIds = (ArrayList<Long>) result.getData().getSerializableExtra("SELECTED_EXERCISES");
-                    if (newExerciseIds != null && !newExerciseIds.isEmpty()) {
+                    long newExerciseId = result.getData().getLongExtra("exerciseId", -1);
+                    if (newExerciseId != -1) {
                         AppDatabase.databaseWriteExecutor.execute(() -> {
-                            List<Exercise> newExercises = db.exerciseDao().getExercisesByIds(newExerciseIds);
-                            runOnUiThread(() -> {
-                                exercises.addAll(newExercises);
-                                adapter.notifyDataSetChanged();
-                            });
+                            Exercise newExercise = db.exerciseDao().getExerciseById(newExerciseId);
+                            if (newExercise != null) {
+                                runOnUiThread(() -> {
+                                    exercises.add(newExercise);
+                                    adapter.notifyItemInserted(exercises.size() - 1);
+                                });
+                            }
                         });
                     }
                 }
@@ -74,6 +80,7 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
+        workoutNameEditText = findViewById(R.id.workout_name_edit_text);
         uptimeChronometer = findViewById(R.id.uptime_chronometer);
         totalVolumeTextView = findViewById(R.id.total_volume_text_view);
         exercisesRecyclerView = findViewById(R.id.exercises_recycler_view);
@@ -108,14 +115,24 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
         uptimeChronometer.setBase(SystemClock.elapsedRealtime());
         uptimeChronometer.start();
 
-        loadWorkoutData();
+        adapter = new StartWorkoutExerciseAdapter(exercises, this, this, this::getUncheckedSetsCount);
+        exercisesRecyclerView.setAdapter(adapter);
+
+        if (workoutPlanId == -1) {
+            // This is an empty workout
+            getSupportActionBar().setTitle("New Workout");
+            workoutNameEditText.setVisibility(View.VISIBLE);
+            adapter.populateSets(new ArrayList<>()); // Initialize with empty sets
+        } else {
+            // This is a planned workout
+            loadWorkoutData();
+        }
     }
 
     private void loadWorkoutData() {
         AppDatabase.databaseWriteExecutor.execute(() -> {
             WorkoutPlan workoutPlan = db.workoutPlanDao().getWorkoutPlanById(workoutPlanId);
             if (workoutPlan != null) {
-                exercises = new ArrayList<>();
                 if (workoutPlan.exerciseIds != null && !workoutPlan.exerciseIds.isEmpty()) {
                     List<Long> exerciseIds = Arrays.stream(workoutPlan.exerciseIds.split(","))
                                                    .map(String::trim)
@@ -131,14 +148,26 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
                     if (getSupportActionBar() != null) {
                         getSupportActionBar().setTitle(workoutPlan.name);
                     }
-                    adapter = new StartWorkoutExerciseAdapter(exercises, this, this);
-                    exercisesRecyclerView.setAdapter(adapter);
                     adapter.populateSets(sets);
                     adapter.notifyDataSetChanged();
                     calculateTotalVolume();
                 });
             }
         });
+    }
+
+    private int getUncheckedSetsCount() {
+        int count = 0;
+        if (adapter != null) {
+            for (List<WorkoutSet> sets : adapter.getSetsByExercise().values()) {
+                for (WorkoutSet set : sets) {
+                    if (!set.isCompleted) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
     }
 
     @Override
@@ -162,12 +191,22 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
     }
 
     private void saveWorkoutAndFinish() {
+        String workoutName;
+        if (workoutPlanId == -1) {
+            workoutName = workoutNameEditText.getText().toString().trim();
+            if (TextUtils.isEmpty(workoutName)) {
+                runOnUiThread(() -> Toast.makeText(this, "Please enter a workout name", Toast.LENGTH_SHORT).show());
+                return;
+            }
+        } else {
+            workoutName = getSupportActionBar().getTitle().toString();
+        }
+
         AppDatabase.databaseWriteExecutor.execute(() -> {
-            long workoutLogId = saveWorkout();
+            long workoutLogId = saveWorkout(workoutName);
             runOnUiThread(() -> {
                 Intent intent = new Intent(this, WorkoutCompleteActivity.class);
                 intent.putExtra(WorkoutCompleteActivity.EXTRA_WORKOUT_LOG_ID, workoutLogId);
-                intent.putExtra(WorkoutCompleteActivity.EXTRA_USER_NAME, "Tim S"); // Replace with actual user name
                 startActivity(intent);
                 finish();
             });
@@ -195,13 +234,15 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
         totalVolumeTextView.setText("Total Volume: " + totalVolume + " lbs");
     }
 
-    private long saveWorkout() {
+    private long saveWorkout(String workoutName) {
         WorkoutLog workoutLog = new WorkoutLog();
-        workoutLog.planId = workoutPlanId;
+        if (workoutPlanId != -1) {
+            workoutLog.planId = workoutPlanId;
+        }
         workoutLog.date = new Date().getTime();
         workoutLog.duration = SystemClock.elapsedRealtime() - uptimeChronometer.getBase();
         workoutLog.totalVolume = totalVolume;
-        workoutLog.workoutName = getSupportActionBar().getTitle().toString();
+        workoutLog.workoutName = workoutName;
 
         long workoutLogId = db.workoutLogDao().insert(workoutLog);
 
@@ -231,7 +272,9 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
             }
         }
 
-        db.setDao().insertAll(setsToSave.toArray(new Set[0]));
+        if (!setsToSave.isEmpty()) {
+            db.setDao().insertAll(setsToSave.toArray(new Set[0]));
+        }
         return workoutLogId;
     }
 

@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.workoutlogger.data.WorkoutSet;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -28,12 +29,14 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.Vi
     private OnVolumeChangedListener volumeChangedListener;
     private final StartWorkoutExerciseAdapter.OnWorkoutCompleteListener workoutCompleteListener;
     private final String exerciseType;
+    private final Supplier<Integer> uncheckedSetsCountSupplier;
 
-    public StartWorkoutSetAdapter(List<WorkoutSet> sets, String exerciseType, OnVolumeChangedListener volumeListener, StartWorkoutExerciseAdapter.OnWorkoutCompleteListener completeListener) {
+    public StartWorkoutSetAdapter(List<WorkoutSet> sets, String exerciseType, OnVolumeChangedListener volumeListener, StartWorkoutExerciseAdapter.OnWorkoutCompleteListener completeListener, Supplier<Integer> uncheckedSetsCountSupplier) {
         this.sets = sets;
         this.exerciseType = exerciseType;
         this.volumeChangedListener = volumeListener;
         this.workoutCompleteListener = completeListener;
+        this.uncheckedSetsCountSupplier = uncheckedSetsCountSupplier;
     }
 
     @Override
@@ -138,13 +141,13 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                     set.plannedReps = s.toString();
-                    if (!s.toString().isEmpty() && !setCompleteCheckbox.isChecked()) {
-                        setCompleteCheckbox.setChecked(true);
-                    } else if (setCompleteCheckbox.isChecked()) {
-                        if (volumeChangedListener != null) volumeChangedListener.onVolumeChanged();
+                    if (setCompleteCheckbox.isChecked() && volumeChangedListener != null) {
+                        volumeChangedListener.onVolumeChanged();
                     }
                 }
-                @Override public void afterTextChanged(Editable s) {}
+                @Override public void afterTextChanged(Editable s) {
+                    checkWeightCompletion();
+                }
             };
 
             weightWatcher = new TextWatcher() {
@@ -155,17 +158,35 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                     } catch (NumberFormatException e) {
                         set.weight = 0;
                     }
-                    if (!s.toString().isEmpty() && !setCompleteCheckbox.isChecked()) {
-                        setCompleteCheckbox.setChecked(true);
-                    } else if (setCompleteCheckbox.isChecked()) {
-                        if (volumeChangedListener != null) volumeChangedListener.onVolumeChanged();
+                    if (setCompleteCheckbox.isChecked() && volumeChangedListener != null) {
+                        volumeChangedListener.onVolumeChanged();
                     }
                 }
-                @Override public void afterTextChanged(Editable s) {}
+                @Override public void afterTextChanged(Editable s) {
+                    checkWeightCompletion();
+                }
             };
 
             repsEditText.addTextChangedListener(repsWatcher);
             weightEditText.addTextChangedListener(weightWatcher);
+        }
+
+        private void checkWeightCompletion() {
+            if (uncheckedSetsCountSupplier.get() <= 1) return;
+            String repsStr = repsEditText.getText().toString();
+            String weightStr = weightEditText.getText().toString();
+
+            if (!repsStr.isEmpty() && !weightStr.isEmpty()) {
+                try {
+                    int reps = Integer.parseInt(repsStr);
+                    float weight = Float.parseFloat(weightStr);
+                    if (reps > 0 && weight > 0 && !setCompleteCheckbox.isChecked()) {
+                        setCompleteCheckbox.setChecked(true);
+                    }
+                } catch (NumberFormatException e) {
+                    // Do nothing if parsing fails
+                }
+            }
         }
     }
 
@@ -234,11 +255,10 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                     } catch (NumberFormatException e) {
                         set.duration = 0;
                     }
-                     if (!s.toString().isEmpty() && !setCompleteCheckbox.isChecked()) {
-                        setCompleteCheckbox.setChecked(true);
-                    }
                 }
-                @Override public void afterTextChanged(Editable s) {}
+                @Override public void afterTextChanged(Editable s) {
+                    checkCardioCompletion();
+                }
             };
 
             distanceWatcher = new TextWatcher() {
@@ -249,15 +269,35 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                     } catch (NumberFormatException e) {
                         set.distance = 0;
                     }
-                     if (!s.toString().isEmpty() && !setCompleteCheckbox.isChecked()) {
-                        setCompleteCheckbox.setChecked(true);
-                    }
                 }
-                @Override public void afterTextChanged(Editable s) {}
+                @Override public void afterTextChanged(Editable s) {
+                    checkCardioCompletion();
+                }
             };
 
             durationEditText.addTextChangedListener(durationWatcher);
             distanceEditText.addTextChangedListener(distanceWatcher);
+        }
+
+        private void checkCardioCompletion() {
+            if (uncheckedSetsCountSupplier.get() <= 1) return;
+            boolean durationEntered = false;
+            try {
+                if (!durationEditText.getText().toString().trim().isEmpty()) {
+                    durationEntered = Float.parseFloat(durationEditText.getText().toString().trim()) > 0;
+                }
+            } catch (NumberFormatException e) { /* Do nothing */ }
+
+            boolean distanceEntered = false;
+            try {
+                if (!distanceEditText.getText().toString().trim().isEmpty()) {
+                    distanceEntered = Float.parseFloat(distanceEditText.getText().toString().trim()) > 0;
+                }
+            } catch (NumberFormatException e) { /* Do nothing */ }
+
+            if ((durationEntered || distanceEntered) && !setCompleteCheckbox.isChecked()) {
+                setCompleteCheckbox.setChecked(true);
+            }
         }
     }
 }

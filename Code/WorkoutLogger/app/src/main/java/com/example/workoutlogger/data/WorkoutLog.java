@@ -15,7 +15,7 @@ public class WorkoutLog {
     @PrimaryKey(autoGenerate = true)
     public long uid;
 
-    public long planId;
+    public Long planId; // Changed to Long to allow for null values
 
     // The date the workout was performed, stored as a long (milliseconds)
     public long date;

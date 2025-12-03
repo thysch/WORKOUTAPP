@@ -1,6 +1,8 @@
 package com.example.workoutlogger;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -63,6 +65,10 @@ public class WorkoutDetailActivity extends AppCompatActivity {
                     getSupportActionBar().setTitle(workoutLog.workoutName);
                 }
 
+                SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                String weightUnit = sharedPreferences.getString("weight_unit", "lbs");
+                String distanceUnit = sharedPreferences.getString("distance_unit", "mi");
+
                 TextView dateTextView = findViewById(R.id.workout_date_text_view);
                 TextView volumeTextView = findViewById(R.id.total_volume_text_view);
                 TextView durationTextView = findViewById(R.id.workout_duration_text_view);
@@ -74,11 +80,15 @@ public class WorkoutDetailActivity extends AppCompatActivity {
                 long seconds = TimeUnit.MILLISECONDS.toSeconds(workoutLog.duration) % 60;
                 durationTextView.setText(String.format(Locale.getDefault(), "Duration: %dm %ds", minutes, seconds));
 
-                volumeTextView.setText(String.format(Locale.getDefault(), "Total Volume: %.1f lbs", workoutLog.totalVolume));
+                float totalVolume = workoutLog.totalVolume;
+                if ("kg".equals(weightUnit)) {
+                    totalVolume *= 0.453592f;
+                }
+                volumeTextView.setText(String.format(Locale.getDefault(), "Total Volume: %.1f %s", totalVolume, weightUnit));
 
                 RecyclerView recyclerView = findViewById(R.id.exercises_recycler_view);
                 recyclerView.setLayoutManager(new LinearLayoutManager(this));
-                WorkoutDetailExerciseAdapter adapter = new WorkoutDetailExerciseAdapter(exercises, setsByExerciseId);
+                WorkoutDetailExerciseAdapter adapter = new WorkoutDetailExerciseAdapter(exercises, setsByExerciseId, true, weightUnit, distanceUnit);
                 recyclerView.setAdapter(adapter);
             });
         });
