@@ -14,8 +14,13 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-public class SettingsActivity extends AppCompatActivity {
+import java.util.Arrays;
+import java.util.List;
+
+public class SettingsActivity extends AppCompatActivity implements ColorPickerAdapter.OnColorSelectedListener {
 
     private SharedPreferences sharedPreferences;
     private EditText nameEditText;
@@ -26,6 +31,7 @@ public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        applyTheme();
         setContentView(R.layout.activity_settings);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -46,7 +52,6 @@ public class SettingsActivity extends AppCompatActivity {
                 uri -> {
                     if (uri != null) {
                         try {
-                            // Persist permission to access the URI across device restarts
                             final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
                             getContentResolver().takePersistableUriPermission(uri, takeFlags);
 
@@ -60,11 +65,24 @@ public class SettingsActivity extends AppCompatActivity {
                 });
 
         Button changePhotoButton = findViewById(R.id.change_photo_button);
-        changePhotoButton.setOnClickListener(v -> {
-            selectImageLauncher.launch("image/*");
-        });
+        changePhotoButton.setOnClickListener(v -> selectImageLauncher.launch("image/*"));
 
+        setupColorPicker();
         loadSettings();
+    }
+
+    private void setupColorPicker() {
+        RecyclerView colorPickerRecyclerView = findViewById(R.id.color_picker_recycler_view);
+        colorPickerRecyclerView.setLayoutManager(new GridLayoutManager(this, 5));
+
+        List<Integer> colors = Arrays.asList(
+                R.color.theme_red, R.color.theme_pink, R.color.theme_purple, R.color.theme_deep_purple, R.color.theme_indigo,
+                R.color.theme_blue, R.color.theme_teal, R.color.theme_green, R.color.theme_orange, R.color.theme_brown
+        );
+
+        int selectedColor = sharedPreferences.getInt("selected_theme_color", R.color.colorPrimary);
+        ColorPickerAdapter adapter = new ColorPickerAdapter(this, colors, selectedColor, this);
+        colorPickerRecyclerView.setAdapter(adapter);
     }
 
     private void loadSettings() {
@@ -112,6 +130,33 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         editor.apply();
+    }
+
+    @Override
+    public void onColorSelected(int colorResId) {
+        sharedPreferences.edit().putInt("selected_theme_color", colorResId).apply();
+        recreate();
+    }
+
+    private void applyTheme() {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        int colorRes = sharedPreferences.getInt("selected_theme_color", R.color.colorPrimary);
+        int themeResId = getThemeResId(colorRes);
+        setTheme(themeResId);
+    }
+
+    private int getThemeResId(int colorRes) {
+        if (colorRes == R.color.theme_red) return R.style.Theme_WorkoutLogger_Red;
+        if (colorRes == R.color.theme_pink) return R.style.Theme_WorkoutLogger_Pink;
+        if (colorRes == R.color.theme_purple) return R.style.Theme_WorkoutLogger_Purple;
+        if (colorRes == R.color.theme_deep_purple) return R.style.Theme_WorkoutLogger_DeepPurple;
+        if (colorRes == R.color.theme_indigo) return R.style.Theme_WorkoutLogger_Indigo;
+        if (colorRes == R.color.theme_blue) return R.style.Theme_WorkoutLogger_Blue;
+        if (colorRes == R.color.theme_teal) return R.style.Theme_WorkoutLogger_Teal;
+        if (colorRes == R.color.theme_green) return R.style.Theme_WorkoutLogger_Green;
+        if (colorRes == R.color.theme_orange) return R.style.Theme_WorkoutLogger_Orange;
+        if (colorRes == R.color.theme_brown) return R.style.Theme_WorkoutLogger_Brown;
+        return R.style.Theme_WorkoutLogger;
     }
 
     @Override
