@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setSelectedItemId(R.id.nav_workouts);
         bottomNavigationView.setOnNavigationItemSelectedListener(item -> {
             int itemId = item.getItemId();
             if (itemId == R.id.nav_profile) {
@@ -83,11 +84,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 return true;
             } else if (itemId == R.id.nav_home) {
-                // Already on the main activity, so do nothing or refresh
+                Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+                startActivity(intent);
                 return true;
             } else if (itemId == R.id.nav_workouts) {
-                // This could be a different view or activity for all workouts.
-                // For now, we'll just stay here.
                 return true;
             }
             return false;
