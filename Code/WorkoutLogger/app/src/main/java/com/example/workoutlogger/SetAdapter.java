@@ -63,7 +63,7 @@ public class SetAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return sets.size();
     }
 
-    private void notifyDataChanged() {
+    public void notifyDataChanged() {
         if (dataChangedListener != null) {
             dataChangedListener.onDataChanged();
         }
@@ -123,7 +123,7 @@ public class SetAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 if (currentPosition != RecyclerView.NO_POSITION) {
                     sets.remove(currentPosition);
                     notifyItemRemoved(currentPosition);
-                    notifyItemRangeChanged(currentPosition, sets.size());
+                    notifyItemRangeChanged(currentPosition, sets.size() - currentPosition);
                     notifyDataChanged();
                 }
             });
@@ -196,7 +196,7 @@ public class SetAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 if (currentPosition != RecyclerView.NO_POSITION) {
                     sets.remove(currentPosition);
                     notifyItemRemoved(currentPosition);
-                    notifyItemRangeChanged(currentPosition, sets.size());
+                    notifyItemRangeChanged(currentPosition, sets.size() - currentPosition);
                     notifyDataChanged();
                 }
             });

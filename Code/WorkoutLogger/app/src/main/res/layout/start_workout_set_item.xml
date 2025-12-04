@@ -42,7 +42,6 @@
         android:id="@+id/reps_edit_text"
         android:layout_width="70dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="0dp"
         android:gravity="center"
         android:hint="8-12"
         android:inputType="number"

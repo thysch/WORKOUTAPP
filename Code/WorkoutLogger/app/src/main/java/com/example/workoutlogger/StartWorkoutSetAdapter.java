@@ -122,6 +122,7 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                     String weightStr = weightEditText.getText().toString();
                     if (repsStr.isEmpty() || weightStr.isEmpty()) {
                         Toast.makeText(itemView.getContext(), "Please enter reps and weight.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(itemView.getContext(), "Please enter reps and weight.", Toast.LENGTH_SHORT).show();
                         buttonView.setChecked(false);
                         return;
                     }
@@ -169,6 +170,22 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                     set.plannedReps = s.toString();
+
+                    // LIMIT REPS TO 100
+                    if (!s.toString().isEmpty()) {
+                        try {
+                            int reps = Integer.parseInt(s.toString());
+                            if (reps > 100) {
+                                Toast.makeText(itemView.getContext(), "Reps cannot exceed 100.", Toast.LENGTH_SHORT).show();
+                                repsEditText.setText("100");
+                                repsEditText.setSelection(repsEditText.getText().length());
+                                set.plannedReps = "100";
+
+                                // Uncheck completed
+                                setCompleteCheckbox.setChecked(false);
+                            }
+                        } catch (NumberFormatException ignore) {}
+                    }
                     if (setCompleteCheckbox.isChecked() && volumeChangedListener != null) {
                         volumeChangedListener.onVolumeChanged();
                     }
@@ -183,6 +200,22 @@ public class StartWorkoutSetAdapter extends RecyclerView.Adapter<RecyclerView.Vi
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                     try {
                         set.weight = Float.parseFloat(s.toString());
+
+                        // LIMIT WEIGHT TO 1000
+                        if (!s.toString().isEmpty()) {
+                            try {
+                                float weight = Float.parseFloat(s.toString());
+                                if (weight > 1000) {
+                                    Toast.makeText(itemView.getContext(), "Weight cannot exceed 1000 lbs.", Toast.LENGTH_SHORT).show();
+                                    weightEditText.setText("1000");
+                                    weightEditText.setSelection(weightEditText.getText().length());
+                                    set.weight = 1000f;
+
+                                    // Uncheck completed
+                                    setCompleteCheckbox.setChecked(false);
+                                }
+                            } catch (NumberFormatException ignore) {}
+                        }
                     } catch (NumberFormatException e) {
                         set.weight = 0;
                     }
