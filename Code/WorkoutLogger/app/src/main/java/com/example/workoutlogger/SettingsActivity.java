@@ -75,8 +75,12 @@ public class SettingsActivity extends AppCompatActivity implements ColorPickerAd
     }
 
     private void setupColorPicker() {
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 5);
         RecyclerView colorPickerRecyclerView = findViewById(R.id.color_picker_recycler_view);
         colorPickerRecyclerView.setLayoutManager(new GridLayoutManager(this, 5));
+        // layoutManager.setCanScrollVertically(false);
+       // colorPickerRecyclerView.setLayoutManager(layoutManager);
+       // colorPickerRecyclerView.setNestedScrollingEnabled(false);
 
         List<Integer> colors = Arrays.asList(
                 R.color.theme_red, R.color.theme_pink, R.color.theme_purple, R.color.theme_deep_purple, R.color.theme_indigo,
