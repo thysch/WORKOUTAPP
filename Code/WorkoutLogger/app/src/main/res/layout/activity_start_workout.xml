@@ -13,6 +13,7 @@
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
@@ -54,7 +55,7 @@
             android:text="Total Volume: 0"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/uptime_chronometer" />
+            app:layout_constraintTop_toBottomOf="@id/uptime_chronometer" />
 
         <!-- 1. "Rest timer" Label -->
         <TextView
@@ -104,64 +105,6 @@
             app:layout_constraintEnd_toStartOf="@id/reset_timer_button" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/plate_calculator_card"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="8dp"
-        app:layout_constraintTop_toBottomOf="@id/stats_container"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/calculator_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Plate Calculator"
-                android:textAppearance="?attr/textAppearanceHeadline6"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <EditText
-                android:id="@+id/weight_input_edit_text"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:hint="Total Weight (lbs)"
-                android:inputType="numberDecimal"
-                app:layout_constraintTop_toBottomOf="@id/calculator_title"
-                app:layout_constraintStart_toStartOf="parent"
-                app.layout_constraintEnd_toStartOf="@+id/calculate_button"/>
-
-            <Button
-                android:id="@+id/calculate_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Calculate"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBaseline_toBaselineOf="@id/weight_input_edit_text"/>
-
-            <TextView
-                android:id="@+id/plate_result_text_view"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textAppearance="?attr/textAppearanceBody1"
-                tools:text="Each side: 2 x 45 lbs, 1 x 25 lbs"
-                app:layout_constraintTop_toBottomOf="@id/weight_input_edit_text"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </androidx.cardview.widget.CardView>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/exercises_recycler_view"
         android:layout_width="0dp"
@@ -170,7 +113,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/plate_calculator_card" />
+        app:layout_constraintTop_toBottomOf="@id/stats_container" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_exercise_fab"

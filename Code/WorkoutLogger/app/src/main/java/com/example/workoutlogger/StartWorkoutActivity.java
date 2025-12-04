@@ -6,6 +6,9 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Chronometer;
@@ -99,24 +102,6 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
         exercisesRecyclerView = findViewById(R.id.exercises_recycler_view);
         exercisesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Plate Calculator UI
-        EditText weightInputEditText = findViewById(R.id.weight_input_edit_text);
-        Button calculateButton = findViewById(R.id.calculate_button);
-        TextView plateResultTextView = findViewById(R.id.plate_result_text_view);
-
-        calculateButton.setOnClickListener(v -> {
-            String weightStr = weightInputEditText.getText().toString();
-            if (!weightStr.isEmpty()) {
-                try {
-                    double totalWeight = Double.parseDouble(weightStr);
-                    String result = WeightCalculator.calculatePlates(totalWeight);
-                    plateResultTextView.setText(result);
-                } catch (NumberFormatException e) {
-                    plateResultTextView.setText("Invalid weight");
-                }
-            }
-        });
-
         Button startRestButton = findViewById(R.id.start_stop_timer_button);
         Button resetRestButton = findViewById(R.id.reset_timer_button);
 
@@ -174,6 +159,36 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
 
         // Set initial volume text
         calculateTotalVolume();
+    }
+
+    private void showPlateCalculatorDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View view = getLayoutInflater().inflate(R.layout.dialog_plate_calculator, null);
+        builder.setView(view);
+
+        EditText weightInputEditText = view.findViewById(R.id.weight_input_edit_text);
+        Button calculateButton = view.findViewById(R.id.calculate_button);
+        TextView plateResultTextView = view.findViewById(R.id.plate_result_text_view);
+        Button cancelButton = view.findViewById(R.id.cancel_button);
+
+        AlertDialog dialog = builder.create();
+
+        calculateButton.setOnClickListener(v -> {
+            String weightStr = weightInputEditText.getText().toString();
+            if (!weightStr.isEmpty()) {
+                try {
+                    double totalWeight = Double.parseDouble(weightStr);
+                    String result = WeightCalculator.calculatePlates(totalWeight);
+                    plateResultTextView.setText(result);
+                } catch (NumberFormatException e) {
+                    plateResultTextView.setText("Invalid weight");
+                }
+            }
+        });
+
+        cancelButton.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     private void loadWorkoutData() {
@@ -335,6 +350,22 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
             db.setDao().insertAll(setsToSave.toArray(new Set[0]));
         }
         return workoutLogId;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.start_workout_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_plate_calculator) {
+            showPlateCalculatorDialog();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
