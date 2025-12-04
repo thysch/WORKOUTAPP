@@ -13,6 +13,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -23,6 +25,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 public class SettingsActivity extends AppCompatActivity implements ColorPickerAdapter.OnColorSelectedListener {
 
@@ -33,6 +37,11 @@ public class SettingsActivity extends AppCompatActivity implements ColorPickerAd
     private EditText nameEditText;
     private RadioGroup distanceUnitsRadioGroup, weightUnitsRadioGroup;
     private ImageView profileImageView;
+    private ActivityResultLauncher<Intent> galleryLauncher;
+    // Simple set of example bad words for profanity filtering
+    private static final Set<String> BAD_WORDS = new HashSet<>(Arrays.asList(
+            "bad", "word", "example", "profanity"
+    ));
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +65,21 @@ public class SettingsActivity extends AppCompatActivity implements ColorPickerAd
 
         Button changePhotoButton = findViewById(R.id.change_photo_button);
         changePhotoButton.setOnClickListener(v -> checkPermissionAndOpenGallery());
+
+        galleryLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null && result.getData().getData() != null) {
+                        Uri imageUri = result.getData().getData();
+
+                        final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+                        getContentResolver().takePersistableUriPermission(imageUri, takeFlags);
+
+                        sharedPreferences.edit().putString("profile_image_uri", imageUri.toString()).apply();
+
+                        loadAvatar(imageUri);
+                    }
+                });
 
         setupColorPicker();
         loadSettings();
@@ -104,9 +128,17 @@ public class SettingsActivity extends AppCompatActivity implements ColorPickerAd
     }
 
     private void saveSettings() {
+        String name = nameEditText.getText().toString().trim();
+        if (name.isEmpty() || isProfane(name)) {
+            Toast.makeText(this, "Invalid name. Please choose an appropriate name without profanity.", Toast.LENGTH_SHORT).show();
+            // Revert to previous name
+            nameEditText.setText(sharedPreferences.getString("user_name", "Tim S"));
+            return;
+        }
+
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        editor.putString("user_name", nameEditText.getText().toString());
+        editor.putString("user_name", name);
 
         int selectedDistanceId = distanceUnitsRadioGroup.getCheckedRadioButtonId();
         if (selectedDistanceId == R.id.mi_radio_button) {
@@ -123,6 +155,16 @@ public class SettingsActivity extends AppCompatActivity implements ColorPickerAd
         }
 
         editor.apply();
+    }
+
+    private boolean isProfane(String text) {
+        String lowerText = text.toLowerCase();
+        for (String badWord : BAD_WORDS) {
+            if (lowerText.contains(badWord)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -171,7 +213,7 @@ public class SettingsActivity extends AppCompatActivity implements ColorPickerAd
         Intent galleryIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         galleryIntent.addCategory(Intent.CATEGORY_OPENABLE);
         galleryIntent.setType("image/*");
-        startActivityForResult(galleryIntent, GALLERY_REQUEST_CODE);
+        galleryLauncher.launch(galleryIntent);
     }
 
     @Override
@@ -184,22 +226,6 @@ public class SettingsActivity extends AppCompatActivity implements ColorPickerAd
             } else {
                 Toast.makeText(this, "Permission denied. Cannot select a profile picture.", Toast.LENGTH_LONG).show();
             }
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == GALLERY_REQUEST_CODE && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Uri imageUri = data.getData();
-
-            final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
-            getContentResolver().takePersistableUriPermission(imageUri, takeFlags);
-
-            sharedPreferences.edit().putString("profile_image_uri", imageUri.toString()).apply();
-
-            loadAvatar(imageUri);
         }
     }
 
