@@ -173,9 +173,9 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
             long minutes = elapsedMinutes % 60;
 
             if (hours > 0) {
-                uptimeTextView.setText(String.format(Locale.getDefault(), "%dh %dm", hours, minutes));
+                uptimeTextView.setText(String.format(Locale.getDefault(), "Duration: %dh %dm", hours, minutes));
             } else {
-                uptimeTextView.setText(String.format(Locale.getDefault(), "%dm", minutes));
+                uptimeTextView.setText(String.format(Locale.getDefault(), "Duration: %dm", minutes));
             }
 
             timerHandler.postDelayed(this, 60000); // Update every minute
@@ -398,14 +398,21 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
 
     @Override
     public void onBackPressed() {
-        new AlertDialog.Builder(this)
+        // OLD, PROBLEMATIC WAYS:
+        // new AlertDialog.Builder(this) -> Inconsistent theme
+        // new AlertDialog.Builder(this, mCurrentTheme) -> Fullscreen dialog
+
+        // THE CORRECT WAY:
+        // Use a dedicated Material 3 dialog theme. This ensures it's a popup
+        // and that the buttons are styled correctly according to the Day/Night theme.
+        new AlertDialog.Builder(this, com.google.android.material.R.style.Theme_Material3_DayNight_Dialog_Alert)
                 .setTitle("Discard workout?")
                 .setMessage("Do you want to save this workout session?")
                 .setPositiveButton("Save", (dialog, which) -> saveWorkoutAndFinish())
                 .setNegativeButton("Discard", (dialog, which) -> finish())
+                .setNeutralButton("Cancel", null) // A null listener dismisses the dialog by default
                 .show();
     }
-
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();

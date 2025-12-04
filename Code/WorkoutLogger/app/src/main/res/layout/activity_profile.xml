@@ -6,14 +6,14 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Light">
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?android:attr/windowBackground"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+            android:background="?attr/colorPrimary"
+            app:titleTextAppearance="@style/ToolbarTitleTextAppearance" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -30,7 +30,7 @@
             android:id="@+id/profile_avatar"
             android:layout_width="96dp"
             android:layout_height="96dp"
-            android:src="@drawable/ic_default_profile"
+            android:src="@drawable/ic_profile_avatar"
             app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.App.CornerSize50Percent" />
 
         <TextView
@@ -66,6 +66,7 @@
             android:padding="12dp"
             android:drawableStart="@drawable/ic_history"
             android:drawablePadding="16dp"
+            android:drawableTint="?android:attr/textColorPrimary"
             android:background="?attr/selectableItemBackground"/>
 
         <TextView
@@ -78,6 +79,7 @@
             android:padding="12dp"
             android:drawableStart="@drawable/ic_stats"
             android:drawablePadding="16dp"
+            android:drawableTint="?android:attr/textColorPrimary"
             android:background="?attr/selectableItemBackground"/>
 
         <TextView
@@ -90,6 +92,7 @@
             android:padding="12dp"
             android:drawableStart="@drawable/ic_settings"
             android:drawablePadding="16dp"
+            android:drawableTint="?android:attr/textColorPrimary"
             android:background="?attr/selectableItemBackground"/>
 
     </LinearLayout>

@@ -5,6 +5,30 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+
+        <!-- Component Styles -->
+        <item name="toolbarStyle">@style/MyToolbarStyle</item>
+        <item name="materialButtonStyle">@style/MyButtonStyle</item>
+        <item name="floatingActionButtonStyle">@style/MyFloatingActionButtonStyle</item>
+    </style>
+
+    <style name="MyToolbarStyle" parent="Widget.MaterialComponents.Toolbar">
+        <item name="titleTextAppearance">@style/ToolbarTitleTextAppearance</item>
+        <item name="android:theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+        <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+        <item name="android:background">?attr/colorPrimary</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:elevation">4dp</item>
+    </style>
+
+    <style name="MyButtonStyle" parent="Widget.MaterialComponents.Button">
+        <item name="android:backgroundTint">?attr/colorPrimary</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="MyFloatingActionButtonStyle" parent="Widget.MaterialComponents.FloatingActionButton">
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="tint">?attr/colorOnPrimary</item>
     </style>
 
     <style name="Theme.WorkoutLogger" parent="Base.Theme.WorkoutLogger" />
@@ -58,4 +82,10 @@
     <style name="ShapeAppearanceOverlay.App.CornerSize50Percent" parent="">
         <item name="cornerSize">50%</item>
     </style>
+
+    <style name="ToolbarTitleTextAppearance" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">20sp</item>
+    </style>
+
+
 </resources>

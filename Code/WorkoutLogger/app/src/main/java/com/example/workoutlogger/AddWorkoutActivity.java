@@ -251,20 +251,21 @@ public class AddWorkoutActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (isWorkoutEdited) {
-            // If changes were made, show the confirmation dialog
-            new AlertDialog.Builder(this)
-                    .setTitle("Save this workout?")
-                    .setPositiveButton("Save", (dialog, which) -> saveWorkout())
-                    .setNegativeButton("Discard Changes", (dialog, which) -> finish())
-                    .setNeutralButton("Cancel", null)
-                    .show();
-        } else {
-            // If no changes were made, just finish the activity
-            super.onBackPressed();
-        }
+        // Apply the same fix here: use a dedicated Material 3 dialog theme
+        // to ensure the dialog is a popup and is styled correctly.
+        new AlertDialog.Builder(this, com.google.android.material.R.style.Theme_Material3_DayNight_Dialog_Alert)
+                .setTitle("Discard Changes?")
+                .setMessage("Do you want to discard your changes?")
+                .setPositiveButton("Keep Editing", (dialog, which) -> {
+                    // Just dismiss the dialog and stay on the screen
+                    dialog.dismiss();
+                })
+                .setNegativeButton("Discard", (dialog, which) -> {
+                    // This will call the original onBackPressed behavior, which finishes the activity
+                    AddWorkoutActivity.super.onBackPressed();
+                })
+                .show();
     }
-
     @Override
     public boolean onSupportNavigateUp() {
         onBackPressed();

@@ -14,7 +14,9 @@
         android:elevation="4dp"
         android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:titleTextAppearance="@style/ToolbarTitleTextAppearance"
+        />
 
     <EditText
         android:id="@+id/workout_name_edit_text"
@@ -51,7 +53,7 @@
 
         <TextView
             android:id="@+id/uptime_text_view"
-            android:layout_width="56dp"
+            android:layout_width="100dp"
             android:layout_height="18dp"
             android:layout_marginTop="16dp"
             android:minWidth="60dp"

@@ -10,7 +10,7 @@ import java.util.List;
 
 @Dao
 public interface WorkoutPlanDao {
-    @Query("SELECT * FROM workout_plans ORDER BY displayOrder ASC")
+    @Query("SELECT * FROM workout_plans ORDER BY uid ASC")
     List<WorkoutPlan> getAllWorkoutPlans();
 
     @Query("SELECT * FROM workout_plans WHERE uid = :id")

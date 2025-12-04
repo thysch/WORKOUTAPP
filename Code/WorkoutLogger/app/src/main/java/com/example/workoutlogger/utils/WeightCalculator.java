@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.text.DecimalFormat;
 
 public class WeightCalculator {
 
@@ -31,6 +32,10 @@ public class WeightCalculator {
             return "Barbell only";
         }
 
+        DecimalFormat df = new DecimalFormat("#.##");
+        DecimalFormat dfWhole = new DecimalFormat("#");
+
+
         List<Double> sortedPlates = new ArrayList<>(plates.keySet());
         Collections.sort(sortedPlates, Collections.reverseOrder());
 
@@ -38,7 +43,11 @@ public class WeightCalculator {
         for (int i = 0; i < sortedPlates.size(); i++) {
             double size = sortedPlates.get(i);
             int count = plates.get(size);
-            result.append(count).append(" x ").append(size).append(" lbs");
+            if (size == (long) size) {
+                result.append(count).append(" x ").append(dfWhole.format(size)).append(" lbs");
+            } else {
+                result.append(count).append(" x ").append(df.format(size)).append(" lbs");
+            }
             if (i < sortedPlates.size() - 1) {
                 result.append(", ");
             }

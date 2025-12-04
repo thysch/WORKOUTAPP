@@ -15,6 +15,7 @@ import android.widget.RadioGroup;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -31,7 +32,7 @@ public class SettingsActivity extends AppCompatActivity implements ColorPickerAd
 
     private SharedPreferences sharedPreferences;
     private EditText nameEditText;
-    private RadioGroup distanceUnitsRadioGroup, weightUnitsRadioGroup;
+    private RadioGroup distanceUnitsRadioGroup, weightUnitsRadioGroup, themeRadioGroup;
     private ImageView profileImageView;
 
     @Override
@@ -52,10 +53,22 @@ public class SettingsActivity extends AppCompatActivity implements ColorPickerAd
         nameEditText = findViewById(R.id.name_edit_text);
         distanceUnitsRadioGroup = findViewById(R.id.distance_units_radio_group);
         weightUnitsRadioGroup = findViewById(R.id.weight_units_radio_group);
+        themeRadioGroup = findViewById(R.id.theme_radio_group);
         profileImageView = findViewById(R.id.profile_image_view);
 
         Button changePhotoButton = findViewById(R.id.change_photo_button);
         changePhotoButton.setOnClickListener(v -> checkPermissionAndOpenGallery());
+
+        themeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            int themeMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+            if (checkedId == R.id.dark_theme_radio_button) {
+                themeMode = AppCompatDelegate.MODE_NIGHT_YES;
+            } else if (checkedId == R.id.light_theme_radio_button) {
+                themeMode = AppCompatDelegate.MODE_NIGHT_NO;
+            }
+            sharedPreferences.edit().putInt("theme", themeMode).apply();
+            AppCompatDelegate.setDefaultNightMode(themeMode);
+        });
 
         setupColorPicker();
         loadSettings();
@@ -80,6 +93,7 @@ public class SettingsActivity extends AppCompatActivity implements ColorPickerAd
         String distanceUnit = sharedPreferences.getString("distance_unit", "mi");
         String weightUnit = sharedPreferences.getString("weight_unit", "lbs");
         String imageUriString = sharedPreferences.getString("profile_image_uri", null);
+        int theme = sharedPreferences.getInt("theme", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
 
         nameEditText.setText(name);
 
@@ -100,6 +114,14 @@ public class SettingsActivity extends AppCompatActivity implements ColorPickerAd
             weightUnitsRadioGroup.check(R.id.lbs_radio_button);
         } else {
             weightUnitsRadioGroup.check(R.id.kg_radio_button);
+        }
+
+        if (theme == AppCompatDelegate.MODE_NIGHT_YES) {
+            themeRadioGroup.check(R.id.dark_theme_radio_button);
+        } else if (theme == AppCompatDelegate.MODE_NIGHT_NO) {
+            themeRadioGroup.check(R.id.light_theme_radio_button);
+        } else {
+            themeRadioGroup.check(R.id.system_default_theme_radio_button);
         }
     }
 
@@ -122,7 +144,20 @@ public class SettingsActivity extends AppCompatActivity implements ColorPickerAd
             editor.putString("weight_unit", "kg");
         }
 
+        int selectedThemeId = themeRadioGroup.getCheckedRadioButtonId();
+        int themeMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+        if (selectedThemeId == R.id.dark_theme_radio_button) {
+            themeMode = AppCompatDelegate.MODE_NIGHT_YES;
+        } else if (selectedThemeId == R.id.light_theme_radio_button) {
+            themeMode = AppCompatDelegate.MODE_NIGHT_NO;
+        }
+        editor.putInt("theme", themeMode);
+
         editor.apply();
+
+        if (AppCompatDelegate.getDefaultNightMode() != themeMode) {
+            AppCompatDelegate.setDefaultNightMode(themeMode);
+        }
     }
 
     @Override
@@ -133,6 +168,9 @@ public class SettingsActivity extends AppCompatActivity implements ColorPickerAd
 
     private void applyTheme() {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        int theme = sharedPreferences.getInt("theme", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        AppCompatDelegate.setDefaultNightMode(theme);
+
         int colorRes = sharedPreferences.getInt("selected_theme_color", R.color.colorPrimary);
         int themeResId = getThemeResId(colorRes);
         setTheme(themeResId);

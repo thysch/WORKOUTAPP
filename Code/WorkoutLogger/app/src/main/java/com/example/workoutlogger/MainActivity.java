@@ -162,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         Exercise ex14 = new Exercise(); ex14.name = "Decline Bench Press"; ex14.type = "WEIGHT"; ex14.tags = "Chest,Triceps,Shoulders,Push,Barbell"; long id14 = db.exerciseDao().insert(ex14);
         Exercise ex15 = new Exercise(); ex15.name = "Dumbbell Bench Press"; ex15.type = "WEIGHT"; ex15.tags = "Chest,Triceps,Shoulders,Push,Dumbbell"; long id15 = db.exerciseDao().insert(ex15);
         Exercise ex16 = new Exercise(); ex16.name = "Dumbbell Flyes"; ex16.type = "WEIGHT"; ex16.tags = "Chest,Push,Dumbbell"; long id16 = db.exerciseDao().insert(ex16);
-        Exercise ex17 = new Exercise(); ex17.name = "Push Ups"; ex17.type = "WEIGHT"; ex17.tags = "Chest,Triceps,Shoulders,Push,Bodyweight"; long id17 = db.exerciseDao().insert(ex17);
+        Exercise ex17 = new Exercise(); ex17.name = "Push Ups"; ex17.type = "WEIGHT"; ex17.tags = "Chest,Triceps,Shoulders,Push,Core,Bodyweight"; long id17 = db.exerciseDao().insert(ex17);
         Exercise ex18 = new Exercise(); ex18.name = "Dips"; ex18.type = "WEIGHT"; ex18.tags = "Chest,Triceps,Shoulders,Push,Bodyweight"; long id18 = db.exerciseDao().insert(ex18);
         Exercise ex19 = new Exercise(); ex19.name = "Arnold Press"; ex19.type = "WEIGHT"; ex19.tags = "Shoulders,Triceps,Push,Dumbbell"; long id19 = db.exerciseDao().insert(ex19);
         Exercise ex20 = new Exercise(); ex20.name = "Lateral Raises"; ex20.type = "WEIGHT"; ex20.tags = "Shoulders,Push,Dumbbell"; long id20 = db.exerciseDao().insert(ex20);
