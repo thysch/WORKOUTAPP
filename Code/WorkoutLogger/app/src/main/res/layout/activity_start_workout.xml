@@ -38,24 +38,27 @@
         app:layout_constraintTop_toBottomOf="@id/workout_name_edit_text">
 
         <!-- Left Side: Uptime and Volume -->
-        <Chronometer
-            android:id="@+id/uptime_chronometer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:textSize="24sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
         <TextView
             android:id="@+id/total_volume_text_view"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
             android:text="Total Volume: 0"
-            android:textSize="18sp"
+            android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/uptime_chronometer" />
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Right Side: Rest Timer -->
+
+        <TextView
+            android:id="@+id/uptime_text_view"
+            android:layout_width="56dp"
+            android:layout_height="18dp"
+            android:layout_marginTop="16dp"
+            android:minWidth="60dp"
+            android:text="0m"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/total_volume_text_view" />
 
         <!-- 1. "Rest timer" Label -->
         <TextView
@@ -73,7 +76,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="24sp"
-            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/rest_timer_label" />
 

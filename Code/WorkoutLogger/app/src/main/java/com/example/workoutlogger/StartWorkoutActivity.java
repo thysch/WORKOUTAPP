@@ -3,6 +3,8 @@ package com.example.workoutlogger;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -47,7 +49,7 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
 
     private AppDatabase db;
     private long workoutPlanId;
-    private Chronometer uptimeChronometer;
+    private TextView uptimeTextView;
     private Chronometer restTimerChronometer;
     private TextView totalVolumeTextView;
     private RecyclerView exercisesRecyclerView;
@@ -56,6 +58,8 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
     private float totalVolume = 0;
     private EditText workoutNameEditText;
     private int mCurrentTheme;
+    private long startTime;
+    private Handler timerHandler = new Handler(Looper.getMainLooper());
 
     private final ActivityResultLauncher<Intent> selectExercisesLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -96,7 +100,7 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
         }
 
         workoutNameEditText = findViewById(R.id.workout_name_edit_text);
-        uptimeChronometer = findViewById(R.id.uptime_chronometer);
+        uptimeTextView = findViewById(R.id.uptime_text_view);
         restTimerChronometer = findViewById(R.id.rest_timer);
         totalVolumeTextView = findViewById(R.id.total_volume_text_view);
         exercisesRecyclerView = findViewById(R.id.exercises_recycler_view);
@@ -141,8 +145,8 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
 
         itemTouchHelper.attachToRecyclerView(exercisesRecyclerView);
 
-        uptimeChronometer.setBase(SystemClock.elapsedRealtime());
-        uptimeChronometer.start();
+        startTime = SystemClock.elapsedRealtime();
+        timerHandler.post(updateTimerThread);
 
         adapter = new StartWorkoutExerciseAdapter(exercises, this, this, this::getUncheckedSetsCount);
         exercisesRecyclerView.setAdapter(adapter);
@@ -160,6 +164,23 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
         // Set initial volume text
         calculateTotalVolume();
     }
+
+    private Runnable updateTimerThread = new Runnable() {
+        public void run() {
+            long elapsedMillis = SystemClock.elapsedRealtime() - startTime;
+            long elapsedMinutes = elapsedMillis / 60000;
+            long hours = elapsedMinutes / 60;
+            long minutes = elapsedMinutes % 60;
+
+            if (hours > 0) {
+                uptimeTextView.setText(String.format(Locale.getDefault(), "%dh %dm", hours, minutes));
+            } else {
+                uptimeTextView.setText(String.format(Locale.getDefault(), "%dm", minutes));
+            }
+
+            timerHandler.postDelayed(this, 60000); // Update every minute
+        }
+    };
 
     private void showPlateCalculatorDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -235,11 +256,18 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
     @Override
     protected void onResume() {
         super.onResume();
+        timerHandler.post(updateTimerThread);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         int colorRes = sharedPreferences.getInt("selected_theme_color", R.color.colorPrimary);
         if (mCurrentTheme != getThemeResId(colorRes)) {
             recreate();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        timerHandler.removeCallbacks(updateTimerThread);
     }
 
     @Override
@@ -314,7 +342,7 @@ public class StartWorkoutActivity extends AppCompatActivity implements StartWork
             workoutLog.planId = workoutPlanId;
         }
         workoutLog.date = new Date().getTime();
-        workoutLog.duration = SystemClock.elapsedRealtime() - uptimeChronometer.getBase();
+        workoutLog.duration = SystemClock.elapsedRealtime() - startTime;
         workoutLog.totalVolume = totalVolume;
         workoutLog.workoutName = workoutName;
 
